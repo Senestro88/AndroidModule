@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="files_picker_cancel_button_value" tools:ignore="ButtonCase" translatable="false">CANCEL</string>
+    <string name="files_picker_confirm_button_value" translatable="false">OK</string>
+    <string name="files_picker_list_view_name_value" translatable="false">List name</string>
+    <string name="files_picker_list_view_name_size" translatable="false">List size</string>
+    <string name="files_picker_list_view_back_button_value" translatable="false">Back</string>
+    <string name="files_picker_nav_current_path_value" translatable="false">…</string>
+    <string name="material_toast__message">MaterialToast message</string>
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:padding="http://schemas.android.com/aapt">
+    <!--    Background color-->
+    <item android:id="@android:id/background">
+        <shape>
+            <padding padding:left="8dp" padding:top="8dp" padding:right="8dp" padding:bottom="8dp" />
+            <solid android:color="#B3B3B3" />
+        </shape>
+    </item>
+    <!--    Progress color-->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <solid android:color="#2BBF31" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/files_picker_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_horizontal|center_vertical"
+    android:alpha="1"
+    android:background="@color/white"
+    android:gravity="center_horizontal|center_vertical"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/files_picker_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:layout_margin="4dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="vertical"
+        android:padding="2dp">
+
+        <LinearLayout
+            android:id="@+id/files_picker_header_top"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:gravity="center_horizontal|center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/files_picker_list_view_back_button"
+                android:layout_width="60dp"
+                android:layout_height="30dp"
+                android:background="@color/blue"
+                android:fontFamily="@font/bookos"
+                android:padding="4dp"
+                android:text="@string/files_picker_list_view_back_button_value"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <TextView
+                android:id="@+id/files_picker_list_view_selection_log"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:layout_weight="1"
+                android:fontFamily="@font/bookos"
+                android:gravity="center_horizontal|center_vertical"
+                android:padding="2dp"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/files_picker_header_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:gravity="center_horizontal|center_vertical"
+            android:orientation="horizontal"
+            android:padding="0dp">
+
+            <TextView
+                android:id="@+id/files_picker_nav_current_path"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:layout_weight="1"
+                android:fontFamily="@font/bookos"
+                android:gravity="start|center_horizontal|center_vertical"
+                android:padding="4dp"
+                android:text="@string/files_picker_nav_current_path_value"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/files_picker_view_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="start|center_vertical"
+        android:layout_weight="1"
+        android:gravity="center_horizontal|center_vertical"
+        android:orientation="horizontal"
+        android:padding="2dp">
+
+        <ListView
+            android:id="@+id/files_picker_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:animateLayoutChanges="false"
+            android:padding="1dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/files_picker_bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:orientation="horizontal"
+        android:padding="2dp">
+
+        <Button
+            android:id="@+id/files_picker_cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:layout_margin="4dp"
+            android:layout_weight="1"
+            android:background="@color/red"
+            android:fontFamily="@font/bookos"
+            android:padding="4dp"
+            android:text="@string/files_picker_cancel_button_value"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            tools:ignore="ButtonStyle,TextContrastCheck,TouchTargetSizeCheck" />
+
+        <Button
+            android:id="@+id/files_picker_confirm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:layout_margin="4dp"
+            android:layout_weight="1"
+            android:background="@color/green"
+            android:fontFamily="@font/bookos"
+            android:padding="4dp"
+            android:text="@string/files_picker_confirm_button_value"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            tools:ignore="ButtonStyle,TextContrastCheck,TouchTargetSizeCheck" />
+    </LinearLayout>
+
+</LinearLayout>
