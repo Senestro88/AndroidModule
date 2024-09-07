@@ -1,6 +1,7 @@
 package com.official.senestro.core.utils;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -8,6 +9,8 @@ import java.io.File;
 import java.util.Objects;
 
 public class ClearDataUtils {
+    private final String tag = ClearDataUtils.class.getName();
+
     private final Context context;
 
     public ClearDataUtils(@NonNull Context context) {
@@ -21,7 +24,7 @@ public class ClearDataUtils {
             // Call the method to delete all data files
             deleteFiles(dataDirFile);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -33,7 +36,7 @@ public class ClearDataUtils {
             assert dataDirFile != null;
             deleteFiles(dataDirFile);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 

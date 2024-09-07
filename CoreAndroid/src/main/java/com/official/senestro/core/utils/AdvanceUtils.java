@@ -41,7 +41,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
-//noinspection ExifInterface
 import android.media.ExifInterface;
 import android.media.MediaMetadataRetriever;
 import android.net.ConnectivityManager;
@@ -57,6 +56,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -118,6 +118,8 @@ import java.util.zip.ZipFile;
 
 
 public class AdvanceUtils {
+    private static final String tag = AdvanceUtils.class.getName();
+
     // PUBLIC VARIABLES
     /* ----------------------------------------------------------------- */
     public static int bufferSize = 2097152; // 2MB
@@ -314,7 +316,7 @@ public class AdvanceUtils {
                 }
             }
         } catch (CameraAccessException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
     // End - Camera
@@ -456,32 +458,60 @@ public class AdvanceUtils {
 
     public static boolean isServiceRunning(@NonNull Context context, @NonNull Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
+        if (notNull(manager)) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (serviceClass.getName().equals(service.service.getClassName())) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public static void startBackgroundService(@NonNull Context context, @NonNull Class<?> serviceClass) {
-        if (!isServiceRunning(context, serviceClass)) {
-            Intent serviceIntent = new Intent(context, serviceClass);
-            context.startService(serviceIntent);
-        }
+    public static ComponentName startService(@NonNull Context context, @NonNull Class<?> serviceClass) {
+        return startService(context, new Intent(context, serviceClass));
     }
 
-    public static void startForegroundService(@NonNull Context context, @NonNull Class<?> serviceClass) {
-        if (!isServiceRunning(context, serviceClass) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(new Intent(context, serviceClass));
+    public static ComponentName startService(@NonNull Context context, @NonNull Intent serviceIntent) {
+        try {
+            return context.startService(serviceIntent);
+        } catch (Throwable e) {
+            Log.e(tag, e.getMessage(), e);
         }
+        return null;
     }
 
-    public static void stopService(@NonNull Context context, @NonNull Class<?> serviceClass) {
-        if (isServiceRunning(context, serviceClass)) {
-            Intent serviceIntent = new Intent(context, serviceClass);
-            context.stopService(serviceIntent);
+    public static ComponentName startForegroundService(@NonNull Context context, @NonNull Class<?> serviceClass) {
+        return startForegroundService(context, new Intent(context, serviceClass));
+    }
+
+    public static ComponentName startForegroundService(@NonNull Context context, @NonNull Intent serviceIntent) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                return context.startForegroundService(serviceIntent);
+            }
+        } catch (Throwable e) {
+            Log.e(tag, e.getMessage(), e);
         }
+        return null;
+    }
+
+    public static boolean stopService(@NonNull Context context, @NonNull Class<?> serviceClass) {
+        try {
+            return context.stopService(new Intent(context, serviceClass));
+        } catch (Throwable e) {
+            Log.e(tag, e.getMessage(), e);
+        }
+        return false;
+    }
+
+    public static boolean stopService(@NonNull Context context, @NonNull Intent intent) {
+        try {
+            return context.stopService(intent);
+        } catch (Throwable e) {
+            Log.e(tag, e.getMessage(), e);
+        }
+        return false;
     }
 
     public static String generateRandomText(int length) {
@@ -544,7 +574,7 @@ public class AdvanceUtils {
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             context.startActivity(intent);
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -552,7 +582,7 @@ public class AdvanceUtils {
         try {
             openUrlInBrowser(context, url);
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -732,7 +762,7 @@ public class AdvanceUtils {
             receiver.close();
             return bitmap;
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return null;
     }
@@ -744,7 +774,7 @@ public class AdvanceUtils {
                 closeable.close();
             }
         } catch (RuntimeException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         } catch (Exception ignored) {
         }
     }
@@ -754,7 +784,7 @@ public class AdvanceUtils {
             try {
                 boolean create = new File(path).createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -774,7 +804,7 @@ public class AdvanceUtils {
             try {
                 boolean create = new File(path).mkdirs();
             } catch (SecurityException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -784,7 +814,7 @@ public class AdvanceUtils {
             try {
                 boolean create = file.mkdirs();
             } catch (SecurityException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -834,7 +864,7 @@ public class AdvanceUtils {
                         builder.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8));
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(tag, e.getMessage(), e);
                 }
             }
         }
@@ -1063,7 +1093,7 @@ public class AdvanceUtils {
         try (FileOutputStream writer = new FileOutputStream(destPath)) {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, writer);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1083,7 +1113,7 @@ public class AdvanceUtils {
                 options.inSampleSize = scaleFactor;
                 return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri), null, options);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return null;
@@ -1297,14 +1327,14 @@ public class AdvanceUtils {
 
     public static long directorySize(@Nullable String path, boolean recursively) {
         long size = 0;
-        if (path != null && isDirectory(path)) {
-            File[] listedFiles = new File(path).listFiles();
-            if (listedFiles != null) {
-                for (File listedFile : listedFiles) {
-                    if (listedFile.isDirectory() && recursively) {
-                        size += directorySize(listedFile.getAbsolutePath(), true);
+        if (notNull(path) && isDirectory(path)) {
+            File[] files = new File(path).listFiles();
+            if (notNull(files)) {
+                for (File file : files) {
+                    if (file.isDirectory() && recursively) {
+                        size += directorySize(file.getAbsolutePath(), true);
                     } else {
-                        size += listedFile.length();
+                        size += file.length();
                     }
                 }
             }
@@ -1322,7 +1352,7 @@ public class AdvanceUtils {
             try {
                 boolean renamed = new File(source).renameTo(new File(destination));
             } catch (Throwable e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -1407,7 +1437,7 @@ public class AdvanceUtils {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1423,7 +1453,7 @@ public class AdvanceUtils {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1473,7 +1503,7 @@ public class AdvanceUtils {
             zip.close();
         } catch (Throwable e) {
             // Handle exceptions appropriately in a real application
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1516,7 +1546,7 @@ public class AdvanceUtils {
             zip.close();
         } catch (Throwable e) {
             // Handle exceptions appropriately in a real application
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1541,7 +1571,7 @@ public class AdvanceUtils {
             }
             zip.close();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return extension;
     }
@@ -1568,7 +1598,7 @@ public class AdvanceUtils {
             writer.write(data);
             writer.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1578,7 +1608,7 @@ public class AdvanceUtils {
             stream.write(bytes, 0, bytes.length);
             stream.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1627,7 +1657,7 @@ public class AdvanceUtils {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return lists;
     }
@@ -1657,7 +1687,7 @@ public class AdvanceUtils {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
 
 
@@ -1693,7 +1723,7 @@ public class AdvanceUtils {
                 packagesData.add(data);
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return packagesData;
     }
@@ -1707,7 +1737,7 @@ public class AdvanceUtils {
         try {
             return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getCacheDir();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return null;
         }
     }
@@ -1716,7 +1746,7 @@ public class AdvanceUtils {
         try {
             return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getExternalCacheDir();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return null;
         }
     }
@@ -1726,7 +1756,7 @@ public class AdvanceUtils {
             return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getFilesDir();
         } catch (PackageManager.NameNotFoundException e) {
             // Handle the exception if the package is not found
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return null;
         }
     }
@@ -1736,7 +1766,7 @@ public class AdvanceUtils {
             return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getExternalFilesDir(null);
         } catch (PackageManager.NameNotFoundException e) {
             // Handle the exception if the package is not found
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return null;
         }
     }
@@ -1751,7 +1781,7 @@ public class AdvanceUtils {
             clipboardManager.setPrimaryClip(clipData);
             return true;
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return false;
         }
     }
@@ -1782,7 +1812,7 @@ public class AdvanceUtils {
             activity.startActivity(intent);
             activity.finish();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1792,7 +1822,7 @@ public class AdvanceUtils {
             activity.startActivity(intent);
             activity.finish();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1801,7 +1831,7 @@ public class AdvanceUtils {
             int flag = on ? WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON : 0;
             activity.runOnUiThread(() -> activity.getWindow().addFlags(flag));
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -1818,7 +1848,7 @@ public class AdvanceUtils {
             retriever.release();
             retriever.close();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return information;
     }
@@ -1832,7 +1862,7 @@ public class AdvanceUtils {
             size = connection.getContentLength();
             connection.disconnect();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return size;
     }
@@ -1895,7 +1925,7 @@ public class AdvanceUtils {
                     return uriForFile;
                 }
             } catch (Throwable e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return null;
@@ -1999,7 +2029,7 @@ public class AdvanceUtils {
                 return null;
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return null;
         } finally {
             if (process != null) {
@@ -2008,7 +2038,7 @@ public class AdvanceUtils {
         }
     }
 
-    public static boolean isPackageLaunchable(@NonNull Context context, @NonNull String packageName) {
+    public static boolean canLunchPackage(@NonNull Context context, @NonNull String packageName) {
         PackageManager pm = context.getPackageManager();
         Intent launchIntent = pm.getLaunchIntentForPackage(packageName);
         return launchIntent != null;
@@ -2022,7 +2052,7 @@ public class AdvanceUtils {
             ApplicationInfo applicationInfo = packageManager.getApplicationInfo(packageName, 0); // Retrieve the ApplicationInfo
             label = packageManager.getApplicationLabel(applicationInfo).toString();
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return label;
     }
@@ -2045,12 +2075,9 @@ public class AdvanceUtils {
 
     public static boolean isValidAPKFile(File file) {
         if (isFile(file.getAbsolutePath())) {
-            try {
-                ApkInfoExtractor info = new ApkInfoExtractor(file);
-                info.getAppInfo();
+            ApkInfoExtractor info = new ApkInfoExtractor(file);
+            if (notNull(info.getAppInfo())) {
                 return true;
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         return false;
@@ -2072,6 +2099,21 @@ public class AdvanceUtils {
         return AdvanceUtils.getPathLastSegment(absolutePath);
     }
 
+    public static String getPath(@Nullable File file) {
+        return notNull(file) ? file.getPath() : "";
+    }
+
+    public static String getPath(@Nullable String filename) {
+        return getPath(new File(filename));
+    }
+
+    public static boolean notZero(int value) {
+        return value != 0;
+    }
+
+    public static boolean isZero(int value) {
+        return value == 0;
+    }
 
     // PRIVATE METHODS
     /* ----------------------------------------------------------------- */

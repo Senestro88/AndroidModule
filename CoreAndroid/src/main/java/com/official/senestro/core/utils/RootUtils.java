@@ -77,7 +77,7 @@ public class RootUtils {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
             if (callback != null) {
                 callback.onError("Error: " + e.getMessage());
             }

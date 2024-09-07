@@ -11,50 +11,57 @@ import com.official.senestro.core.utils.DateUtils;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 
 public class Logging {
-    private static String directory;
+    private static String directory = Environment.getExternalStorageDirectory().getAbsolutePath();
 
     private Logging() {
     }
 
-    public static void setPath(@NonNull String directory) {
-        Logging.directory = directory;
+    public static void setDirectory(@NonNull String directory) {
+        if (AdvanceUtils.isDirectory(directory)) {
+            Logging.directory = directory;
+        }
     }
 
-    public static void message(@NonNull String message, @Nullable Throwable throwable) {
-        save(format(message, throwable), "messages");
+    public static String getDirectory() {
+        return directory;
     }
 
-    public static void error(@NonNull String message, @Nullable Throwable throwable) {
-        save(format(message, throwable), "errors");
+    public static void d(@NonNull String message, @Nullable Throwable throwable) {
+        saveFormattedFormated(setFormattedMessage(message, throwable), "debugs");
+    }
+
+    public static void e(@NonNull String message, @Nullable Throwable throwable) {
+        saveFormattedFormated(setFormattedMessage(message, throwable), "errors");
+    }
+
+    public static void i(@NonNull String message, @Nullable Throwable throwable) {
+        saveFormattedFormated(setFormattedMessage(message, throwable), "info");
     }
 
     // ----------------------------------------------------------------------------------------------------- //
-    private static String format(@NonNull String message, @Nullable Throwable throwable) {
+    private static String setFormattedMessage(@NonNull String message, @Nullable Throwable throwable) {
         DateUtils dateUtils = new DateUtils();
         String date = dateUtils.getLongDayNameOfWeek() + ", " + dateUtils.getMonthLongName() + " " + dateUtils.getDayInMonth() + ", " + dateUtils.getYear();
         String time = dateUtils.get12Hour(true) + ":" + dateUtils.getMinutes() + ":" + dateUtils.getSeconds() + " " + dateUtils.getDayPeriod();
-        String formated = "====>>> LOG DATE AND TIME  " + date.concat(" @ " + time) + "\n\t\tMessage >> " + message + (throwable != null ? "\n\t\tStack trace >> " + Log.getStackTraceString(throwable) : "") + "\n\n";
-        return formated;
+        return "====>>> LOG DATE AND TIME  " + date.concat(" @ " + time) + "\n\t\tMESSAGE >> " + message + (throwable != null ? "\n\t\tSTACK TRACE >> " + Log.getStackTraceString(throwable) : "") + "\n\n";
     }
 
-    private static void save(@NonNull String message, @NonNull String basename) {
-        String directoryPath = directory != null ? directory : Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "logs";
-        if (!AdvanceUtils.isDirectory(directoryPath)) {
-            AdvanceUtils.createDirectory(directoryPath);
-            if (AdvanceUtils.isDirectory(directoryPath)) {
-                save(message, basename);
+    private static void saveFormattedFormated(@NonNull String formatted, @NonNull String basename) {
+        if (!AdvanceUtils.isDirectory(directory)) {
+            AdvanceUtils.createDirectory(directory);
+            if (AdvanceUtils.isDirectory(directory)) {
+                saveFormattedFormated(formatted, basename);
             }
         } else {
             try {
-                FileWriter writer = new FileWriter(new File(directoryPath, basename.concat(".txt")), true);
-                writer.append(message);
+                // Write to file
+                FileWriter writer = new FileWriter(new File(directory, basename.concat(".txt")), true);
+                writer.append(formatted);
                 writer.append("\n\n");
                 writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Throwable ignored) {
             }
         }
     }

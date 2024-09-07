@@ -18,7 +18,7 @@ public class LocalHTTPD {
     private LocalHTTPDCallback callback;
     private final AdvanceWifi wifi;
     private NanoHTTPD nano;
-    private boolean isBinded;
+    private boolean isBounded;
     private int port;
     private String address;
 
@@ -27,8 +27,8 @@ public class LocalHTTPD {
         this.wifi = new AdvanceWifi(context);
     }
 
-    public boolean isBinded() {
-        return isBinded;
+    public boolean isBounded() {
+        return isBounded;
     }
 
     public void bind(@NonNull String address, int port, @NonNull LocalHTTPDCallback callback) {
@@ -53,11 +53,11 @@ public class LocalHTTPD {
     }
 
     public void unbind() {
-        if (isBinded && nano != null) {
+        if (isBounded && nano != null) {
             nano.stop();
-            isBinded = false;
+            isBounded = false;
             nano = null;
-            onUnbinded("LocalHTTP was closed successfully");
+            onUnbounded("LocalHTTP was closed successfully");
         }
     }
 
@@ -66,20 +66,20 @@ public class LocalHTTPD {
         try {
             nano = new Nano(this.address, this.port);
             nano.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-            isBinded = true;
-            onBinded(this.address, this.port, "Server started and listening on: " + this.address + ":" + this.port);
+            isBounded = true;
+            onBound(this.address, this.port, "Server started and listening on: " + this.address + ":" + this.port);
         } catch (Throwable e) {
-            isBinded = false;
+            isBounded = false;
             String message = e.getMessage();
             onError(message == null ? "An error has occurred" : message);
         }
     }
 
-    private void onBinded(@NonNull String address, int port, @NonNull String message) {
+    private void onBound(@NonNull String address, int port, @NonNull String message) {
         postToCallback(callbacks -> callbacks.onBinded(address, port, LocalHTTPD.TAG, message));
     }
 
-    private void onUnbinded(@NonNull String message) {
+    private void onUnbounded(@NonNull String message) {
         postToCallback(callbacks -> callbacks.onUnbinded(LocalHTTPD.TAG, message));
     }
 

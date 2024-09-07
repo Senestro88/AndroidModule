@@ -1,11 +1,15 @@
 package com.official.senestro.core;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class FOStream implements AutoCloseable {
+    private static final String tag = FOStream.class.getName();
+
     private final String absolutePath;
     private FileOutputStream stream;
 
@@ -19,7 +23,7 @@ public class FOStream implements AutoCloseable {
             try {
                 this.stream.write(integer);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -29,7 +33,7 @@ public class FOStream implements AutoCloseable {
             try {
                 this.stream.write(bytes);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -39,7 +43,7 @@ public class FOStream implements AutoCloseable {
             try {
                 this.stream.write(bytes, offset, length);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -58,7 +62,7 @@ public class FOStream implements AutoCloseable {
             try {
                 this.stream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             } finally {
                 this.stream = null;
             }
@@ -71,7 +75,7 @@ public class FOStream implements AutoCloseable {
             this.stream = new FileOutputStream(this.absolutePath, append);
         } catch (IOException e) {
             this.stream = null;
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 }

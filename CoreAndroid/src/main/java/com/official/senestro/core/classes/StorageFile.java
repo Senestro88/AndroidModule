@@ -11,6 +11,7 @@ import static com.official.senestro.core.classes.EnvironmentSDCard.WRITE_APPONLY
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -18,6 +19,8 @@ import java.io.File;
 import java.util.Objects;
 
 public class StorageFile extends File {
+    private final String tag = StorageFile.class.getName();
+
     public String userLabel, uuid, state, writeState, type;
     public boolean isPrimary, isRemovable, isEmulated;
 
@@ -51,7 +54,7 @@ public class StorageFile extends File {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 

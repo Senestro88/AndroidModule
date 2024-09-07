@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class ImageUtils {
+    private final String tag = ImageUtils.class.getName();
+
     private final Context context;
 
     public ImageUtils(Context context) {
@@ -43,7 +46,7 @@ public class ImageUtils {
             stream.flush();
             stream.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -52,7 +55,7 @@ public class ImageUtils {
             bitmap.compress(format, quality, stream);
             stream.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 }

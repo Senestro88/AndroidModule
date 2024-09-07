@@ -3,6 +3,7 @@ package com.official.senestro.core;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -28,24 +29,24 @@ public class LocalHTTP {
     private LocalHTTPCallback callback;
     private ServerSocket server;
     private final ArrayList<Socket> sockets = new ArrayList<>();
-    private boolean isBinded = false;
+    private boolean isBounded = false;
 
     public LocalHTTP(@NonNull Context context) {
         this.context = context;
         this.wifi = new AdvanceWifi(context);
     }
 
-    public boolean isBinded() {
-        return isBinded;
+    public boolean isBounded() {
+        return isBounded;
     }
 
     public void unbind() {
-        if (isBinded && server != null) {
+        if (isBounded && server != null) {
             try {
                 close();
                 server.close();
-                isBinded = false;
-                onUnbinded("LocalHTTP was closed successfully");
+                isBounded = false;
+                onUnbounded("LocalHTTP was closed successfully");
             } catch (Throwable e) {
                 onError(e.getMessage() == null ? "disconnect: Invalid exception message" : e.getMessage());
             }
@@ -75,7 +76,7 @@ public class LocalHTTP {
 
     // PRIVATE
     private void startBinding() {
-        if (!isBinded()) {
+        if (!isBounded()) {
             ExecutorService executor = Executors.newFixedThreadPool(10);
             executor.submit(new StartServerRunnable(this));
         }
@@ -91,17 +92,17 @@ public class LocalHTTP {
                 try {
                     socket.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                 }
             }
         }
     }
 
-    private void onBinded(@NonNull String address, int port, @NonNull String message) {
+    private void onBound(@NonNull String address, int port, @NonNull String message) {
         postToCallback(callbacks -> callbacks.onBinded(address, port, LocalHTTP.TAG, message));
     }
 
-    private void onUnbinded(@NonNull String message) {
+    private void onUnbounded(@NonNull String message) {
         postToCallback(callbacks -> callbacks.onUnbinded(LocalHTTP.TAG, message));
     }
 
@@ -139,8 +140,8 @@ public class LocalHTTP {
             try {
                 instance.server = new ServerSocket();
                 instance.server.bind(new InetSocketAddress(instance.address, instance.port));
-                instance.isBinded = true;
-                instance.onBinded(instance.address, instance.port, "Server started and listening on: " + instance.address + ":" + instance.port);
+                instance.isBounded = true;
+                instance.onBound(instance.address, instance.port, "Server started and listening on: " + instance.address + ":" + instance.port);
                 do {
                     Socket socket = instance.server.accept();
                     int socketIndex = instance.sockets.size();
@@ -149,7 +150,7 @@ public class LocalHTTP {
                     executor.submit(new StartClientRunnable(instance, socket, socketIndex));
                 } while (!instance.server.isClosed());
             } catch (Throwable e) {
-                instance.isBinded = false;
+                instance.isBounded = false;
                 instance.onError(e.getMessage() == null ? "Invalid exception message" : e.getMessage());
             }
         }
@@ -175,7 +176,7 @@ public class LocalHTTP {
                 String requestMethod = client.getMethod();
                 handleRequestMethod(requestMethod);
             } catch (Throwable e) {
-                e.printStackTrace();
+                Log.e(TAG, e.getMessage(), e);
                 instance.onError(e.getMessage() == null ? "Invalid exception message" : e.getMessage());
             }
         }

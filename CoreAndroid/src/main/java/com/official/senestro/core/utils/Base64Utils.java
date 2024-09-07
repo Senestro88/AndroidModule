@@ -2,10 +2,13 @@ package com.official.senestro.core.utils;
 
 import android.content.Context;
 import android.util.Base64;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 public class Base64Utils {
+    private final String tag = Base64Utils.class.getName();
+
     private final Context context;
 
     public Base64Utils(@NonNull Context context) {
@@ -29,7 +32,7 @@ public class Base64Utils {
         try {
             encoded = android.util.Base64.encodeToString(bytes, flags);
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return encoded;
     }
@@ -51,7 +54,7 @@ public class Base64Utils {
         try {
             decoded = new String(android.util.Base64.decode(bytes, flags));
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return decoded;
     }

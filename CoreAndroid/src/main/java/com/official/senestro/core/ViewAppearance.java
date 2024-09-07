@@ -12,14 +12,14 @@ import androidx.annotation.RequiresApi;
 public class ViewAppearance {
     private final Context context;
     private final View view;
-    private GradientDrawable $drawable; // Original drawable
+    private GradientDrawable originalDrawable; // Original drawable
     private GradientDrawable drawable; // Styling drawable
 
     public ViewAppearance(@NonNull Context context, @NonNull View view) {
         this.context = context;
         this.view = view;
-        this.set$Drawable();
         this.setDrawable();
+        this.setMutableDrawable();
         this.drawable.setShape(GradientDrawable.RECTANGLE);
     }
 
@@ -45,18 +45,18 @@ public class ViewAppearance {
     }
 
     public void reset() {
-        view.setBackground($drawable);
-        this.setDrawable();
+        view.setBackground(originalDrawable);
+        this.setMutableDrawable();
     }
 
     // PRIVATE
-    private void set$Drawable() {
+    private void setDrawable() {
         Drawable background = view.getBackground();
-        this.$drawable = background instanceof GradientDrawable ? (GradientDrawable) background : new GradientDrawable();
+        this.originalDrawable = background instanceof GradientDrawable ? (GradientDrawable) background : new GradientDrawable();
     }
 
-    private void setDrawable() {
-        Drawable.ConstantState $drawableConstantState = $drawable.getConstantState();
-        this.drawable = $drawableConstantState != null ? (GradientDrawable) $drawableConstantState.newDrawable().mutate() : new GradientDrawable();
+    private void setMutableDrawable() {
+        Drawable.ConstantState dcs = originalDrawable.getConstantState();
+        this.drawable = dcs != null ? (GradientDrawable) dcs.newDrawable().mutate() : new GradientDrawable();
     }
 }

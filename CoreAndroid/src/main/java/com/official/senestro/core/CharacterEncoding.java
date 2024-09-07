@@ -1,5 +1,7 @@
 package com.official.senestro.core;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,8 +12,10 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class CharacterEncoding {
+    private static final String tag = CharacterEncoding.class.getName();
 
-    private CharacterEncoding(){}
+    private CharacterEncoding() {
+    }
 
     private static final Pattern CHARSET_PATTERN = Pattern.compile("[ |\t]*(charset)[ |\t]*=[ |\t]*['|\"]?([^\"^'^;^,]*)['|\"]?", 2);
 
@@ -20,7 +24,7 @@ public class CharacterEncoding {
             try {
                 return originalString.getBytes(encoding.toUpperCase());
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return null;
@@ -31,7 +35,7 @@ public class CharacterEncoding {
             try {
                 return new String(encodingBytes, encoding.toUpperCase());
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return null;
@@ -42,7 +46,7 @@ public class CharacterEncoding {
             try (FileInputStream fileInputStream = new FileInputStream(absolutePath)) {
                 return new BufferedReader(new InputStreamReader(fileInputStream, encoding.toUpperCase()));
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return null;

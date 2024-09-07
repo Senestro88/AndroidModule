@@ -1,5 +1,7 @@
 package com.official.senestro.core.utils;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.io.File;
@@ -7,6 +9,7 @@ import java.net.URLConnection;
 import java.util.Comparator;
 
 public class FileUtils extends File {
+    private final String tag = FileUtils.class.getName();
 
     public FileUtils(@NonNull String absolutePath) {
         super(absolutePath);
@@ -25,7 +28,7 @@ public class FileUtils extends File {
         try {
             return super.lastModified();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return -1;
         }
     }
@@ -34,7 +37,7 @@ public class FileUtils extends File {
         try {
             return super.isFile() ? AdvanceUtils.getFileContent(getPath()) : "";
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return "";
         }
     }
@@ -43,7 +46,7 @@ public class FileUtils extends File {
         try {
             return super.isFile() ? AdvanceUtils.getExtension(super.getAbsolutePath()).toLowerCase() : "";
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return "";
         }
     }

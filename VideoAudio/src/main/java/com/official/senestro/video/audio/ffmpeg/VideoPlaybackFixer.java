@@ -5,55 +5,63 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.arthenica.ffmpegkit.FFmpegKit;
-import com.arthenica.ffmpegkit.ReturnCode;
+import com.arthenica.mobileffmpeg.Config;
+import com.arthenica.mobileffmpeg.FFmpeg;
+import com.official.senestro.core.utils.AdvanceUtils;
 import com.official.senestro.video.audio.ffmpeg.callbacks.interfaces.VideoPlaybackFixerCallback;
+import com.official.senestro.video.audio.ffmpeg.classes.Utils;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class VideoPlaybackFixer {
+    private final String tag = VideoPlaybackFixer.class.getName();
+
     private final Context context;
     private final Activity activity;
 
-    public VideoPlaybackFixer(Context context, Activity activity) {
+    public VideoPlaybackFixer(@NonNull Context context, @NonNull Activity activity) {
         this.context = context;
         this.activity = activity;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void repairPlayback(@NonNull String videoPath, @NonNull VideoPlaybackFixerCallback callback) {
-        if (Utils.isFile(videoPath)) {
-            String cacheTrailerPath = context.getCacheDir().getAbsolutePath() + File.separator + "FFMPEG-REPAIR-" + Objects.requireNonNull(Utils.generateRandomText(16)).toUpperCase() + "." + Utils.getExtension(videoPath);
-            Utils.delete(cacheTrailerPath);
+    public void repairPlayback(@NonNull String input, @NonNull VideoPlaybackFixerCallback callback) {
+        if (!Utils.isFile(input) || !AdvanceUtils.canRead(input)) {
+            onFailed(callback, "File does not exist or can not read file: " + input);
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            onFailed(callback, "Transcode failed. API level " + Build.VERSION_CODES.N + " or higher is required");
+        } else {
             try {
-                HashMap<String, Object> metadata = Utils.getMediaInformation(context, videoPath);
+                String output = getOutputPath(input);
+                HashMap<String, Object> metadata = Utils.getMediaInformation(context, input);
                 String metadataDuration = (String) metadata.get("duration");
                 final int duration = metadataDuration != null ? Integer.parseInt(metadataDuration) : 0;
-                String command = "-err_detect ignore_err -i " + videoPath + " -c copy " + cacheTrailerPath + "";
-                FFmpegKit.executeAsync(command, session -> {
-                    boolean isSuccess = ReturnCode.isSuccess(session.getReturnCode());
-                    repairResult(callback, isSuccess, cacheTrailerPath, videoPath);
-                }, null, statistics -> {
-                    repairProgress(callback, duration, (float) statistics.getTime());
+                String command = "-err_detect ignore_err -i " + input + " -c copy " + output + "";
+                Config.enableStatisticsCallback(statistics -> onProgress(callback, duration, (float) statistics.getTime()));
+                FFmpeg.executeAsync(command, (executionId, returnCode) -> {
+                    boolean isSuccess = returnCode == Config.RETURN_CODE_SUCCESS;
+                    onResult(callback, isSuccess, output, input);
                 });
             } catch (Throwable e) {
-                FFmpegKit.cancel();
-                e.printStackTrace();
-                repairFailure(callback, Objects.requireNonNull(e.getMessage()));
+                FFmpeg.cancel();
+                Log.e(tag, e.getMessage(), e);
+                onFailed(callback, Objects.requireNonNull(e.getMessage()));
             }
-        } else {
-            repairFailure(callback, "The Context and videoPath must be valid");
         }
     }
 
     // PRIVATE METHODS
-    private void repairResult(@NonNull VideoPlaybackFixerCallback callback, boolean isSuccess, @NonNull String cacheTrailerPath, @NonNull String videoPath) {
+
+    private String getOutputPath(@NonNull String input) {
+        return AdvanceUtils.removeExtension(input).concat("-".concat(Utils.generateRandomText(16).concat(".".concat(AdvanceUtils.getExtension(input)))));
+    }
+
+    private void onResult(@NonNull VideoPlaybackFixerCallback callback, boolean isSuccess, @NonNull String cacheTrailerPath, @NonNull String videoPath) {
         String message = isSuccess ? "success" : "failed";
         if (isSuccess) {
             Utils.delete(videoPath);
@@ -64,14 +72,14 @@ public class VideoPlaybackFixer {
         onDone(callback, isSuccess, message);
     }
 
-    private void repairProgress(@NonNull VideoPlaybackFixerCallback callback, int duration, float time) {
+    private void onProgress(@NonNull VideoPlaybackFixerCallback callback, int duration, float time) {
         int progress = (int) Math.ceil((time / duration) * 100);
         if (progress >= 1) {
             onProgress(callback, (double) progress);
         }
     }
 
-    private void repairFailure(@NonNull VideoPlaybackFixerCallback callback, @NonNull String errorMessage) {
+    private void onFailed(@NonNull VideoPlaybackFixerCallback callback, @NonNull String errorMessage) {
         onDone(callback, false, errorMessage);
     }
 

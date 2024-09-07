@@ -1,5 +1,7 @@
 package com.official.senestro.core;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
@@ -7,6 +9,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class AndroidBuildDetails {
+    private static final String tag = AndroidBuildDetails.class.getName();
+
     private ArrayList<HashMap<String, Object>> androidBuildDetails = new ArrayList<>();
 
     public AndroidBuildDetails() {
@@ -34,6 +38,7 @@ public class AndroidBuildDetails {
     }
 
     // PRIVATE
+
     public String getFromApiLevel(int apiLevel, @NonNull String field) {
         try {
             for (HashMap<String, Object> map : androidBuildDetails) {
@@ -43,7 +48,7 @@ public class AndroidBuildDetails {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return null;
     }

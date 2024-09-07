@@ -1,6 +1,6 @@
 plugins {
     id("com.android.library")
-      id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.android")
 }
 android {
     namespace = "com.official.senestro.core"
@@ -29,9 +29,9 @@ dependencies {
     implementation("com.google.android.exoplayer:exoplayer:2.19.1")
     implementation("com.google.android.gms:play-services-vision:20.1.3")
     implementation("com.google.zxing:android-core:3.3.0")
-     //noinspection KtxExtensionAvailable
-     implementation("androidx.core:core:1.13.1")
-      implementation("androidx.core:core-ktx:1.13.1")
+    //noinspection KtxExtensionAvailable
+    implementation("androidx.core:core:1.13.1")
+    implementation("androidx.core:core-ktx:1.13.1")
     implementation("com.github.bumptech.glide:glide:5.0.0-rc01")
     implementation("net.lingala.zip4j:zip4j:2.11.5")
     implementation("com.google.zxing:core:3.5.3")

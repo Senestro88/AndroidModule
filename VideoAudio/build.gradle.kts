@@ -28,8 +28,9 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.multidex:multidex:2.0.1")
-    implementation("com.arthenica:ffmpeg-kit-full-gpl:6.0-2")
+    implementation("com.arthenica:mobile-ffmpeg-full:4.4")
     implementation("com.arthenica:smart-exception-common:0.2.1")
     implementation("com.arthenica:smart-exception-java:0.2.1")
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+    implementation(project(":CoreAndroid"))
 }

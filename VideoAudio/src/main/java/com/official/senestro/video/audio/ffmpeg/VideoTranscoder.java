@@ -8,18 +8,19 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
-import com.arthenica.ffmpegkit.FFmpegKit;
-import com.arthenica.ffmpegkit.ReturnCode;
-import com.arthenica.ffmpegkit.Session;
-import com.arthenica.ffmpegkit.Statistics;
+import com.arthenica.mobileffmpeg.Config;
+import com.arthenica.mobileffmpeg.FFmpeg;
+import com.arthenica.mobileffmpeg.Statistics;
+import com.official.senestro.core.utils.AdvanceUtils;
 import com.official.senestro.video.audio.ffmpeg.callbacks.interfaces.VideoTranscoderCallback;
+import com.official.senestro.video.audio.ffmpeg.classes.Utils;
 
-import java.io.File;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class VideoTranscoder {
+    private final String tag = VideoTranscoder.class.getName();
     private final Context context;
     private final Activity activity;
 
@@ -28,73 +29,70 @@ public class VideoTranscoder {
         this.activity = activity;
     }
 
-    public void transcode(@NonNull String inputPath, @Nullable String outputPath, @Nullable VideoTranscoderCallback callback) {
-        if (!Utils.isFile(inputPath)) {
-            tanscodeFailure(callback, "Invalid input file: " + inputPath);
-            return;
-        }
-        if (outputPath == null) {
-            outputPath = generateDefaultOutputPath(inputPath);
-        }
-        Utils.delete(outputPath);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            FFmpegTranscode(inputPath, outputPath, callback);
+    public void transcode(@NonNull String input, @Nullable VideoTranscoderCallback callback) {
+        if (!Utils.isFile(input) || !AdvanceUtils.canRead(input)) {
+            onFailed(callback, "File does not exist or can not read file: " + input);
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            onFailed(callback, "Transcode failed. API level " + Build.VERSION_CODES.N + " or higher is required");
         } else {
-            tanscodeFailure(callback, "Requires API level " + Build.VERSION_CODES.N + " or higher");
-        }
-    }
-
-    // PRIVATE
-    private String generateDefaultOutputPath(@NonNull String inputPath) {
-        return context.getCacheDir().getAbsolutePath() + File.separator + "FFMPEG-TRANSCODE-" + Objects.requireNonNull(Utils.generateRandomText(16)).toUpperCase() + "." + Utils.getExtension(inputPath);
-    }
-
-    private void FFmpegTranscode(@NonNull String input, @NonNull String output, VideoTranscoderCallback callback) {
-        try {
-            final String transcodePath = output;
-            HashMap<String, Object> metadata = Utils.getMediaInformation(context, input);
-            String metadataDuration = (String) metadata.get("duration");
-            final int duration = metadataDuration != null ? Integer.parseInt(metadataDuration) : 0;
-            FFmpegKit.executeAsync("-err_detect ignore_err -i " + input + " -c copy " + transcodePath + "", session -> {
-                transcodeResult(session, input, transcodePath, duration, callback);
-            }, null, statistics -> {
-                tanscodeProgress(statistics, duration, callback);
-            });
-        } catch (Throwable e) {
-            FFmpegKit.cancel();
-            String message = e.getMessage();
-            if (message != null) {
-                tanscodeFailure(callback, message);
+            String output = getOutputPath(input);
+            Utils.delete(output);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Transcode(input, output, callback);
+            } else {
+                onFailed(callback, "Transcode failed. API level " + Build.VERSION_CODES.N + " or higher is required");
             }
         }
     }
 
-    private void transcodeResult(@NonNull Session session, @NonNull String inputPath, @NonNull String transcodePath, int duration, VideoTranscoderCallback callback) {
-        boolean isVideoRepaired = ReturnCode.isSuccess(session.getReturnCode());
-        if (isVideoRepaired) {
-            Utils.delete(inputPath);
-            Utils.renameFile(transcodePath, inputPath);
-            onDone(callback, true, "Transcoding successful");
-        } else {
-            Utils.delete(transcodePath);
-            onDone(callback, false, "Failed to transcode: " + inputPath);
+    // PRIVATE
+
+    private String getOutputPath(@NonNull String input) {
+        return AdvanceUtils.removeExtension(input).concat("-".concat(Utils.generateRandomText(16).concat(".".concat(AdvanceUtils.getExtension(input)))));
+    }
+
+    private void Transcode(@NonNull String input, @NonNull String output, VideoTranscoderCallback callback) {
+        try {
+            HashMap<String, Object> metadata = Utils.getMediaInformation(context, input);
+            String metadataDuration = (String) metadata.get("duration");
+            final int duration = metadataDuration != null ? Integer.parseInt(metadataDuration) : 0;
+            Config.enableStatisticsCallback(statistics -> onProgress(statistics, duration, callback));
+            FFmpeg.executeAsync("-err_detect ignore_err -i " + input + " -c copy " + output + "", (executionId, returnCode) -> onResult(returnCode, input, output, duration, callback));
+        } catch (Throwable e) {
+            FFmpeg.cancel();
+            String message = e.getMessage();
+            if (message != null) {
+                onFailed(callback, message);
+            }
         }
     }
 
-    private void tanscodeProgress(@NonNull Statistics statistics, int duration, VideoTranscoderCallback callback) {
+    private void onResult(int returnCode, @NonNull String input, @NonNull String output, int duration, VideoTranscoderCallback callback) {
+        boolean isVideoRepaired = returnCode == Config.RETURN_CODE_SUCCESS;
+        if (isVideoRepaired) {
+            Utils.delete(input);
+            Utils.renameFile(output, input);
+            onDone(callback, true, "Transcoding successful");
+        } else {
+            Utils.delete(output);
+            onDone(callback, false, "Failed to transcode: " + input);
+        }
+    }
+
+    private void onProgress(@NonNull Statistics statistics, int duration, VideoTranscoderCallback callback) {
         int progress = (int) Math.ceil((Float.parseFloat(String.valueOf(statistics.getTime())) / duration) * 100);
         if (progress >= 1) {
             onProgress(callback, progress);
         }
     }
 
-    private void tanscodeFailure(VideoTranscoderCallback callback, @NonNull String errorMessage) {
-        onDone(callback, false, errorMessage);
+    private void onFailed(VideoTranscoderCallback callback, @NonNull String message) {
+        onDone(callback, false, message);
     }
 
-    private void onDone(VideoTranscoderCallback callback, boolean isSuccess, @NonNull String message) {
+    private void onDone(VideoTranscoderCallback callback, boolean success, @NonNull String message) {
         if (callback != null) {
-            new Handler(Looper.getMainLooper()).post(() -> callback.onDone(isSuccess, message));
+            new Handler(Looper.getMainLooper()).post(() -> callback.onDone(success, message));
         }
     }
 

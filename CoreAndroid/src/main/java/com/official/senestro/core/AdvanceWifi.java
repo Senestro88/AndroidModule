@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,6 +48,8 @@ import java.util.Objects;
 
 
 public class AdvanceWifi {
+    private static final String tag = AdvanceWifi.class.getName();
+
     private final @NonNull Context context;
     private final @NonNull CallBackHandler handler;
     private AdvanceWifiEventsCallback callback;
@@ -99,7 +102,7 @@ public class AdvanceWifi {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return "127.0.0.1"; // Default to loopback address if no suitable IPv4 address is found
     }
@@ -134,7 +137,7 @@ public class AdvanceWifi {
     /**
      * Register wifi events by passing the callback
      *
-     * @param callback
+     * @param callback The events callback
      */
     public void registerEvents(@NonNull AdvanceWifiEventsCallback callback) {
         this.callback = callback;
@@ -253,7 +256,7 @@ public class AdvanceWifi {
     /**
      * Register network callback for Android 7.0 and above
      *
-     * @param networkCallback
+     * @param networkCallback The network callback
      */
     @RequiresApi(value = Build.VERSION_CODES.N)
     public void registerNetworkCallback(@NonNull ConnectivityManager.NetworkCallback networkCallback) {
@@ -268,7 +271,7 @@ public class AdvanceWifi {
     /**
      * Unregister the network callback
      *
-     * @param networkCallback
+     * @param networkCallback The network callback
      */
     public void unregisterNetworkCallback(@NonNull ConnectivityManager.NetworkCallback networkCallback) {
         this.connectivity.unregisterNetworkCallback(networkCallback);

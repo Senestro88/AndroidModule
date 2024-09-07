@@ -1,5 +1,7 @@
 package com.official.senestro.core;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -8,6 +10,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class FIStream implements AutoCloseable {
+    private static final String tag = FIStream.class.getName();
+
     private final String absolutePath;
     private long startPos;
     private long endPos;
@@ -26,7 +30,7 @@ public class FIStream implements AutoCloseable {
                 long skipped = this.stream.skip(bytes);
                 this.startPos += skipped;
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -48,7 +52,7 @@ public class FIStream implements AutoCloseable {
                     return bytesRead;
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return -1;
@@ -63,7 +67,7 @@ public class FIStream implements AutoCloseable {
                     return byteRead;
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return -1;
@@ -75,7 +79,7 @@ public class FIStream implements AutoCloseable {
             try {
                 this.stream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             } finally {
                 this.stream = null;
                 this.startPos = 0;
@@ -89,7 +93,7 @@ public class FIStream implements AutoCloseable {
             this.stream = new FileInputStream(this.absolutePath);
         } catch (IOException e) {
             this.stream = null;
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 

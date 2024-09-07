@@ -6,12 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Build;
+import android.util.Log;
 
 import com.official.senestro.core.utils.AdvanceUtils;
 
 import java.lang.reflect.Method;
 
 public class PackageLauncher {
+    private final String tag = PackageLauncher.class.getName();
+
     private final Context context;
     private final Activity activity;
     private final String packageName;
@@ -44,7 +47,7 @@ public class PackageLauncher {
                     method.invoke(options, getFreeformWindowModeId());
                     activity.startActivity(intent, options.toBundle());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(tag, e.getMessage(), e);
                     activity.startActivity(intent);
                 }
             } else {

@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.NonNull;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NotificationUtils {
+    private final String tag = NotificationUtils.class.getName();
 
     private final Context context;
 
@@ -86,7 +88,7 @@ public class NotificationUtils {
             }
             return builder.build();
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return null;
         }
     }
@@ -96,7 +98,7 @@ public class NotificationUtils {
             try {
                 manager().notify(notificationId, notificationBuild);
             } catch (Throwable e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }

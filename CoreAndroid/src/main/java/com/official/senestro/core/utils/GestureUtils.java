@@ -38,7 +38,7 @@ public class GestureUtils {
         scaleGestureDetectors = new ArrayList<>();
     }
 
-    public void zsetZomGestures(@NonNull OnZoomGestures listener) {
+    public void setZomGestures(@NonNull OnZoomGestures listener) {
         final ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(view.getContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
             public boolean onScale(@NonNull ScaleGestureDetector detector) {

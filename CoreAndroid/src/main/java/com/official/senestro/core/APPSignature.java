@@ -3,6 +3,7 @@ package com.official.senestro.core;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -11,6 +12,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class APPSignature {
+    private static final String tag = APPSignature.class.getName();
+
     private final Context context;
 
     public APPSignature(@NonNull Context context) {
@@ -110,7 +113,7 @@ public class APPSignature {
             signatures.put("SHA-256", sha256);
             return signatures;
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
         return null;
     }

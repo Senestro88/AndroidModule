@@ -6,20 +6,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.NonNull;
 
 import com.official.senestro.core.callbacks.interfaces.StorageVolumeCallback;
-import com.official.senestro.core.classes.StorageFile;
 import com.official.senestro.core.classes.EnvironmentSDCard;
 import com.official.senestro.core.classes.Storage;
+import com.official.senestro.core.classes.StorageFile;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StorageVolume {
+    private static final String tag = StorageVolume.class.getName();
+
     @SuppressLint("StaticFieldLeak")
     private static volatile StorageVolume instance;
     private final Context context;
@@ -81,7 +84,7 @@ public class StorageVolume {
         }
     }
 
-    //PRIVARE
+    //PRIVATE
     @SuppressLint("ObsoleteSdkInt")
     private List<Storage> listStoragesForApi9To23() {
         List<Storage> list = new ArrayList<>();
@@ -119,7 +122,7 @@ public class StorageVolume {
                     }
                 }
             } catch (Throwable e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
         return storageList;

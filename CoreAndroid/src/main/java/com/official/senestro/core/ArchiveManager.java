@@ -149,8 +149,8 @@ public class ArchiveManager {
             header.uid = 0;
             header.gid = 0;
             header.size = file.length();
-            header.mtime = file.lastModified() / 1000; // Convert to seconds
-            header.typeflag = '0'; // Regular file
+            header.mimeType = file.lastModified() / 1000; // Convert to seconds
+            header.typeFlag = '0'; // Regular file
             header.checksum = calculateChecksum(header);
             //Write header
             ByteBuffer headerBuffer = ByteBuffer.allocate(TAR_BLOCK_SIZE);
@@ -197,8 +197,8 @@ public class ArchiveManager {
         int uid;
         int gid;
         long size;
-        long mtime;
-        char typeflag;
+        long mimeType;
+        char typeFlag;
         int checksum;
 
         void write(ByteBuffer buffer) {
@@ -207,8 +207,8 @@ public class ArchiveManager {
             writeOctal(buffer, uid, 8);
             writeOctal(buffer, gid, 8);
             writeOctal(buffer, size, 12);
-            writeOctal(buffer, mtime, 12);
-            buffer.put((byte) typeflag);
+            writeOctal(buffer, mimeType, 12);
+            buffer.put((byte) typeFlag);
             writeString(buffer, "", 100); // Link name (unused here)
             writeString(buffer, "ustar  ", 8); // Magic and version
             writeString(buffer, "", 32); // User name (unused here)

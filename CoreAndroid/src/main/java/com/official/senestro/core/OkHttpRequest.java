@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,6 +37,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class OkHttpRequest {
+    private final String tag = OkHttpRequest.class.getName();
+
     // PRIVATE //
     private final Activity activity;
     private HashMap<String, Object> params = new HashMap<>();
@@ -207,7 +210,7 @@ public class OkHttpRequest {
                 builder.hostnameVerifier((hostname, session) -> true);
                 client = builder.build();
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
                 client = null;
             }
         }

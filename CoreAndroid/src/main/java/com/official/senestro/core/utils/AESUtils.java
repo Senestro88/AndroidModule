@@ -32,45 +32,35 @@ public class AESUtils {
 
     public String encData(final @NonNull String data, final @NonNull String key) {
         try {
-            log("===================== encData =====================");
             Cipher cipher = Cipher.getInstance(mode);
             byte[] ivBytes = generateIVBytes();
-            log("Generated iv bytes", ivBytes);
             cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key.getBytes(charset), algo), new IvParameterSpec(ivBytes));
             byte[] resultBytes = cipher.doFinal(data.getBytes(charset));
             log("Cipher result bytes", resultBytes);
             byte[] combinedBytes = combine(ivBytes, resultBytes);
-            log("Combined bytes (Generated iv bytes & cipher result bytes)", combinedBytes);
             String hex = bytesToHex(combinedBytes);
-            log("Encoded combined bytes", hex);
-            log("===================== encData =====================");
             return hex;
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
             return null;
         }
     }
 
     public String decData(final @NonNull String data, final @NonNull String key) {
         try {
-            log("===================== decData =====================");
             byte[] dataBytes = hexToBytes(data);
-            log("Combined data bytes", dataBytes);
             byte[] ivBytes = new byte[16]; // Assuming IV length is 16 bytes for AES/CBC mode
             System.arraycopy(dataBytes, 0, ivBytes, 0, 16);
-            log("Initialization vector bytes", ivBytes);
             byte[] cipherBytes = new byte[dataBytes.length - 16]; // Subtract IV length
             System.arraycopy(dataBytes, 16, cipherBytes, 0, cipherBytes.length);
             log("Cipher bytes", cipherBytes);
             Cipher cipher = Cipher.getInstance(mode);
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key.getBytes(charset), algo), new IvParameterSpec(ivBytes));
             byte[] resultBytes = cipher.doFinal(cipherBytes);
-            log("Plain result bytes", resultBytes);
             String result = new String(resultBytes, charset);
-            log("===================== decData =====================");
             return result;
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
             return null;
         }
     }
@@ -111,17 +101,21 @@ public class AESUtils {
         return combined;
     }
 
-    private void log(@NonNull String msg1, @NonNull String msg2) {
-        if (enableDebugging)
-            Log.d(TAG, msg1 + " [length: " + msg2.length() + "] [value: " + msg2 + "]");
+    private void log(@NonNull String a, @NonNull String b) {
+        if (enableDebugging) {
+            Log.d(TAG, a + " [length: " + b.length() + "] [value: " + b + "]");
+        }
     }
 
-    private void log(@NonNull String msg1, @NonNull byte[] msg2) {
-        if (enableDebugging)
-            Log.d(TAG, msg1 + " [length: " + msg2.length + "] [hex: " + bytesToHex(msg2) + "]");
+    private void log(@NonNull String a, @NonNull byte[] b) {
+        if (enableDebugging) {
+            Log.d(TAG, a + " [length: " + b.length + "] [hex: " + bytesToHex(b) + "]");
+        }
     }
 
     private void log(@NonNull String message) {
-        if (enableDebugging) Log.d(TAG, message);
+        if (enableDebugging) {
+            Log.d(TAG, message);
+        }
     }
 }

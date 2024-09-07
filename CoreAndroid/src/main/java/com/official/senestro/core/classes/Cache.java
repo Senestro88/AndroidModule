@@ -54,6 +54,7 @@ public class Cache {
             map = new HashMap<>();
             map.put(name, value);
         }
+        assert map != null;
         preference.edit().putString(cachePath, GsonToJson(map)).apply();
     }
 

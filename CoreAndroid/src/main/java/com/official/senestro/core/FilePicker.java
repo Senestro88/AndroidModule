@@ -21,7 +21,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.official.senestro.core.utils.AdvanceUtils;
 import com.official.senestro.core.utils.FileUtils;
 import com.official.senestro.core.utils.StorageUtils;
-import com.official.senestro.core.utils.AdvanceTimer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -82,7 +81,7 @@ public class FilePicker {
         setButtonListeners(callback);
         setDialogAttributes(builder, view);
         dialog.show();
-        scheduleListPath(rootPath);
+        scheduleList(rootPath);
     }
 
     private void initializeViews(View view) {
@@ -135,7 +134,7 @@ public class FilePicker {
         dialog = builder.create();
     }
 
-    private void scheduleListPath(@NonNull String path) {
+    private void scheduleList(@NonNull String path) {
         AdvanceTimer.schedule(() -> listPath(path), 200);
     }
 
@@ -148,10 +147,10 @@ public class FilePicker {
                 countSelections();
                 currentPath = absPath;
                 navigationView.setText(currentPath);
-                List<HashMap<String, Object>> listedFiles = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q ? AdvanceUtils.listDir(context, new File(absolutePath), false) : AdvanceUtils.listDir(new File(absolutePath), false);
-                for (HashMap<String, Object> listedMap : listedFiles) {
+                List<HashMap<String, Object>> files = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q ? AdvanceUtils.listDir(context, new File(absolutePath), false) : AdvanceUtils.listDir(new File(absolutePath), false);
+                for (HashMap<String, Object> map : files) {
                     HashMap<String, Object> item = new HashMap<>();
-                    item.put("realPath", listedMap.get("realPath"));
+                    item.put("absolutePath", map.get("absolutePath"));
                     lists.add(item);
                 }
                 listView.setAdapter(new ListViewAdapter(listMPath()));
@@ -161,21 +160,21 @@ public class FilePicker {
     }
 
     private ArrayList<HashMap<String, Object>> listMPath() {
-        ArrayList<HashMap<String, Object>> newLists = new ArrayList<>(lists);
+        ArrayList<HashMap<String, Object>> array = new ArrayList<>(lists);
         lists.clear();
         if (mime != null) {
-            for (HashMap<String, Object> map : newLists) {
-                FileUtils infoUtils = new FileUtils(Objects.requireNonNull(map.get("absolutePath")).toString());
-                String realPath = infoUtils.getPath();
-                String realMime = infoUtils.getMime();
-                if (infoUtils.isDirectory()) {
+            for (HashMap<String, Object> map : array) {
+                FileUtils info = new FileUtils(Objects.requireNonNull(map.get("absolutePath")).toString());
+                String absolutePath = info.getPath();
+                String mime = info.getMime();
+                if (info.isDirectory()) {
                     lists.add(map);
-                } else if (realMime.startsWith(Objects.requireNonNull(selectionMime())) || realMime.equals(Objects.requireNonNull(selectionMime()))) {
+                } else if (mime.startsWith(Objects.requireNonNull(selectionMime())) || mime.equals(Objects.requireNonNull(selectionMime()))) {
                     lists.add(map);
                 }
             }
         } else {
-            lists.addAll(newLists);
+            lists.addAll(array);
         }
         return lists;
     }

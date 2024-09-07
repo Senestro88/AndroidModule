@@ -2,17 +2,21 @@ package com.official.senestro.core.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import java.util.List;
 
 public class ClearRecentUtils {
+    private final String tag = ClearRecentUtils.class.getName();
+
     private final Context context;
 
-    public ClearRecentUtils(@NonNull Context context){
+    public ClearRecentUtils(@NonNull Context context) {
         this.context = context;
     }
+
     public void clearAppFromRecent() {
         try {
             ActivityManager activityManager = (ActivityManager) this.context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -24,6 +28,8 @@ public class ClearRecentUtils {
                     appTask.finishAndRemoveTask();
                 }
             }
-        } catch (Exception e) {e.printStackTrace();}
+        } catch (Exception e) {
+            Log.e(tag, e.getMessage(), e);
+        }
     }
 }

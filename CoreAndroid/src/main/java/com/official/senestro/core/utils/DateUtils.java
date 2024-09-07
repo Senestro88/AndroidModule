@@ -1,5 +1,7 @@
 package com.official.senestro.core.utils;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.text.SimpleDateFormat;
@@ -11,6 +13,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class DateUtils {
+    private final String tag = DateUtils.class.getName();
+
     private Calendar calendar;
     private Date date;
     private TimeZone tz;
@@ -52,7 +56,7 @@ public class DateUtils {
             Locale locale = new Locale(language, country);
             this.locale = locale;
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             this.locale = Locale.ENGLISH;
         }
     }
@@ -244,7 +248,7 @@ public class DateUtils {
             // Check if the created localeString is in the list of available locales
             return Arrays.asList(availableLocales).contains(locale1);
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
             return false;
         }
     }

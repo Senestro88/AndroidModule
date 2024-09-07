@@ -4,9 +4,8 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 
-public class Dialog extends AlertDialog {
+public class Dialog extends androidx.appcompat.app.AlertDialog {
     private final Context context;
 
     public Dialog(@NonNull Context context) {
@@ -25,7 +24,7 @@ public class Dialog extends AlertDialog {
     }
 
     // PUBLIC CLASS
-    public static class Builder extends AlertDialog.Builder {
+    public static class Builder extends androidx.appcompat.app.AlertDialog.Builder {
         private final Context context;
         private String title;
         private String message;

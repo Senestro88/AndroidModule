@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -22,6 +23,8 @@ import androidx.annotation.NonNull;
 import com.official.senestro.core.utils.AdvanceUtils;
 
 public class FloatingVideo {
+    private static final String tag = FloatingVideo.class.getName();
+
     private Context context;
     private String videoPath;
     private int startPos;
@@ -90,7 +93,7 @@ public class FloatingVideo {
             isVideoPrepared = false;
             isVideoPlaying = false;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -139,7 +142,7 @@ public class FloatingVideo {
                         break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         };
         ic_close.setOnClickListener(v -> stop());

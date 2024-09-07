@@ -1,9 +1,11 @@
 package com.official.senestro.core.classes;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
+import com.official.senestro.core.AdvanceHandlerThread;
 import com.official.senestro.core.LocalHTTP;
-import com.official.senestro.core.utils.AdvanceHandlerThread;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,6 +23,7 @@ import java.util.Objects;
 import java.util.TimeZone;
 
 public class LocalHTTPClient {
+    private final String tag = LocalHTTPClient.class.getName();
 
     private LocalHTTP serverInstance;
     private Socket socket;
@@ -66,7 +69,7 @@ public class LocalHTTPClient {
                     socket.close();
                     isValid = false;
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(tag, e.getMessage(), e);
                 }
             }
         });
@@ -153,7 +156,7 @@ public class LocalHTTPClient {
             }
             writer.write("\r\n");
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -161,7 +164,7 @@ public class LocalHTTPClient {
         try {
             getWriter().write(content);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 
@@ -198,7 +201,7 @@ public class LocalHTTPClient {
                 writeBody(content);
                 closeAll();
             } catch (Throwable e) {
-                e.printStackTrace();
+                Log.e(tag, e.getMessage(), e);
             }
         }
     }
@@ -257,12 +260,12 @@ public class LocalHTTPClient {
                         }
                         postRequestBody = bodyBuilder.toString().trim();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Log.e(tag, e.getMessage(), e);
                     }
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, e.getMessage(), e);
         }
     }
 }
