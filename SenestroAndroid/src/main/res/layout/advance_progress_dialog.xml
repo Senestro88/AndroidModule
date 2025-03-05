@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center_horizontal|center_vertical"
+              android:alpha="1"
+              android:background="@drawable/advance_progress_dialog_background"
+              android:gravity="center_horizontal|center_vertical"
+              android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/advance_progress_dialog_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="4dp"
+            android:textColor="@color/black"
+            android:textAppearance="@style/Custom.TextAppearance"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="10dp"/>
+
+    <ProgressBar
+            android:id="@+id/advance_progress_dialog_spinner_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_gravity="center"
+            android:indeterminateOnly="true"
+            style="@style/Custom.SpinnerProgressBar"/>
+
+    <ProgressBar
+            android:id="@+id/advance_progress_dialog_horizontal_progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateOnly="true"
+            style="@style/Custom.HorizontalProgressBar"
+            android:visibility="gone"/>
+
+    <TextView
+            android:id="@+id/advance_progress_dialog_horizontal_percentage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="4dp"
+            android:textColor="@color/black"
+            android:textAppearance="@style/Custom.TextAppearance"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:visibility="gone"/>
+
+    <TextView
+            android:id="@+id/advance_progress_dialog_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:gravity="center_horizontal|center_vertical"
+            android:padding="4dp"
+            android:textColor="@color/black"
+            android:textAppearance="@style/Custom.TextAppearance"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="0dp"/>
+
+</LinearLayout>

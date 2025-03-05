@@ -1,0 +1,5 @@
+package com.official.senestro.core.enums;
+
+public enum AdvanceWifiState {
+    WIFI_STATE_ENABLED, WIFI_STATE_DISABLED, WIFI_SCAN_RESULTS_UPDATED, WIFI_LOG, WIFI_CONNECT_LOG, WIFI_CONNECT_SUCCESS, WIFI_CONNECT_FAILURE
+}

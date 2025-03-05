@@ -1,0 +1,2393 @@
+package com.official.senestro.core.utils;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.admin.DeviceAdminReceiver;
+import android.app.admin.DevicePolicyManager;
+import android.content.*;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
+import android.database.Cursor;
+import android.graphics.*;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
+import android.media.ExifInterface;
+import android.media.MediaMetadataRetriever;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.*;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.webkit.MimeTypeMap;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.lifecycle.Lifecycle;
+import com.official.senestro.core.AdvanceFile;
+import com.official.senestro.core.ApkInfoExtractor;
+import com.official.senestro.core.callbacks.interfaces.ClickCallback;
+import com.official.senestro.core.callbacks.interfaces.CopyBytesChangedCallback;
+import com.official.senestro.core.callbacks.interfaces.SpeechCallback;
+import okhttp3.OkHttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.net.ssl.*;
+import java.io.*;
+import java.lang.Process;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+
+public class AdvanceUtils {
+    private static final String TAG = AdvanceUtils.class.getName();
+
+    // PUBLIC VARIABLES
+    /* ----------------------------------------------------------------- */
+    public static int BUFFER_SIZE = 8192; // 8KB buffer size
+
+    // PRIVATE VARIABLES
+    /* ----------------------------------------------------------------- */
+    private static TextToSpeech textToSpeech = null;
+
+    private AdvanceUtils() {
+    }
+
+    // PUBLIC METHODS
+    /* ----------------------------------------------------------------- */
+
+    public static String millisecondsToTime(int millisecondsTime) {
+        long hours = TimeUnit.MILLISECONDS.toHours(millisecondsTime);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millisecondsTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millisecondsTime));
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millisecondsTime) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millisecondsTime));
+        return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    // Start - CUSTOM TOAST
+    public static void customToast(@NonNull Context context, @NonNull String message, int textColor, int textSize, int backgroundColor, int radius, int gravity, int length) {
+        Toast toast = Toast.makeText(context, message, length);
+        View view = toast.getView();
+        if (notNull(view)) {
+            TextView textView = view.findViewById(android.R.id.message);
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
+            textView.setTextColor(textColor);
+            textView.setGravity(Gravity.CENTER);
+            GradientDrawable gradientDrawable = new GradientDrawable();
+            gradientDrawable.setColor(backgroundColor);
+            gradientDrawable.setCornerRadius(radius);
+            view.setBackground(gradientDrawable);
+            view.setPadding(4, 4, 4, 4);
+            view.setElevation(10);
+            switch (gravity) {
+                case 1:
+                    toast.setGravity(Gravity.TOP, 0, 150);
+                    break;
+                case 2:
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    break;
+                case 3:
+                    toast.setGravity(Gravity.BOTTOM, 0, 150);
+                    break;
+            }
+            toast.show();
+        }
+    }
+
+    public static void customToast(@NonNull Context context, @NonNull String message, int textColor, int textSize, int backgroundColor, int radius, int gravity, int length, int icon) {
+        Toast toast = Toast.makeText(context, message, length);
+        View view = toast.getView();
+        if (notNull(view)) {
+            TextView textView = view.findViewById(android.R.id.message);
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
+            textView.setTextColor(textColor);
+            textView.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
+            textView.setGravity(Gravity.CENTER);
+            textView.setCompoundDrawablePadding(10);
+            GradientDrawable gradientDrawable = new GradientDrawable();
+            gradientDrawable.setColor(backgroundColor);
+            gradientDrawable.setCornerRadius(radius);
+            view.setBackground(gradientDrawable);
+            view.setPadding(4, 4, 4, 4);
+            view.setElevation(10);
+            switch (gravity) {
+                case 1:
+                    toast.setGravity(Gravity.TOP, 0, 150);
+                    break;
+                case 2:
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    break;
+                case 3:
+                    toast.setGravity(Gravity.BOTTOM, 0, 150);
+                    break;
+            }
+            toast.show();
+        }
+    }
+    // End - CUSTOM TOAST
+
+    public static boolean isInternetConnected(@NonNull Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return notNull(activeNetworkInfo) && activeNetworkInfo.isConnected();
+    }
+
+    public static int hexColorToIntColor(@NonNull String hexColor) {
+        return Color.parseColor(hexColor);
+    }
+
+    public static String intColorToHexColor(int intColor) {
+        return "#" + Integer.toHexString(intColor).toUpperCase();
+    }
+
+    // Start - RIPPLE EFFECT
+    public static void rippleClickEffect(@NonNull View view, int backgroundColor, int clickColor, float radius) {
+        GradientDrawable gd = new GradientDrawable();
+        gd.setColor(backgroundColor);
+        gd.setCornerRadius(radius);
+        RippleDrawable rd = new RippleDrawable(new ColorStateList(new int[][]{new int[]{}}, new int[]{clickColor}), gd, null);
+        view.setBackground(rd);
+    }
+
+    public static void rippleClickEffect(@NonNull View view, @NonNull String backgroundColor, @NonNull String clickColor, float radius) {
+        rippleClickEffect(view, Color.parseColor(backgroundColor), Color.parseColor(clickColor), radius);
+    }
+    // End - RIPPLE EFFECT
+
+    public static void setOnClickEffect(@NonNull View view, int clickColor, float clickRadius, ClickCallback callback) {
+        Drawable initialDrawable = view.getBackground();
+        view.setOnClickListener(v -> {
+            GradientDrawable gradientDrawable = new GradientDrawable();
+            gradientDrawable.setColor(clickColor);
+            gradientDrawable.setCornerRadius(clickRadius);
+            view.setBackground(gradientDrawable);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.postDelayed(() -> {
+                view.setBackground(initialDrawable);
+                handler.removeCallbacksAndMessages(null);
+                if (notNull(callback)) {
+                    callback.onClick(view);
+                }
+            }, 100);
+        });
+    }
+
+    public static void setClickEffect(@NonNull View view, int clickColor, float clickRadius, ClickCallback callback) {
+        Drawable initialDrawable = view.getBackground();
+        GradientDrawable gradientDrawable = new GradientDrawable();
+        gradientDrawable.setColor(clickColor);
+        gradientDrawable.setCornerRadius(clickRadius);
+        view.setBackground(gradientDrawable);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(() -> {
+            view.setBackground(initialDrawable);
+            handler.removeCallbacksAndMessages(null);
+            if (notNull(callback)) {
+                callback.onClick(view);
+            }
+        }, 100);
+    }
+
+    public static void setClickCornerRadius(@NonNull View view, float clickRadius) {
+        Drawable initialDrawable = view.getBackground();
+        GradientDrawable gradientDrawable = new GradientDrawable();
+        gradientDrawable.setColorFilter(initialDrawable.getColorFilter());
+        gradientDrawable.setCornerRadius(clickRadius);
+        view.setBackground(gradientDrawable);
+    }
+
+    public static void setClickCornerRadius(@NonNull View view, int backgroundColor, float clickRadius) {
+        Drawable initialDrawable = view.getBackground();
+        GradientDrawable gradientDrawable = new GradientDrawable();
+        gradientDrawable.setColor(backgroundColor);
+        gradientDrawable.setCornerRadius(clickRadius);
+        view.setBackground(gradientDrawable);
+    }
+
+    // Start - Camera
+    public static String getDeviceCameraId(@NonNull Context context) {
+        try {
+            // Get the CameraManager instance
+            CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+            // Get the cameraId for the back-facing camera (usually the one with flash)
+            return cameraManager.getCameraIdList()[0];
+        } catch (CameraAccessException e) {
+            return null;
+        }
+    }
+
+    public static boolean deviceHasFlashlight(@NonNull Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+    }
+
+    public static void switchDeviceFlashlight(@NonNull Context context, boolean switchOn) {
+        try {
+            if (deviceHasFlashlight(context)) {
+                // Get the CameraManager instance
+                CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+                String cameraId = getDeviceCameraId(context);
+                if (notNull(cameraId)) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        cameraManager.setTorchMode(cameraId, switchOn);
+                    }
+                }
+            }
+        } catch (CameraAccessException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+    // End - Camera
+
+    public static Activity convertContextToActivity(@NonNull Context context) {
+        if (context instanceof ContextWrapper) {
+            Context baseContext = ((ContextWrapper) context).getBaseContext();
+            if (baseContext instanceof Activity) {
+                return (Activity) baseContext;
+            }
+        }
+        return null; // Return null if the context is not an activity
+    }
+
+    public static Context convertActivityToContext(@NonNull Activity activity) {
+        return activity.getBaseContext(); // Get the base context of the activity, which is a Context object
+    }
+
+    public static long getFileSize(@NonNull String path) {
+        return isExist(path) ? new File(path).length() : 0;
+    }
+
+    public static String readableSize(@NonNull String path) {
+        long size = getFileSize(path);
+        return readableSize(size);
+    }
+
+    @SuppressLint("DefaultLocale")
+    public static String readableSize(long size) {
+        if (size > 0) {
+            // return android.text.format.Formatter.formatFileSize(context, size);
+            final long KB = 1024;
+            final long MB = KB * 1024;
+            final long GB = MB * 1024;
+            final long TB = GB * 1024;
+            if (size < KB) {
+                return size + " B";
+            } else if (size < MB) {
+                return String.format("%.2f KB", size / (float) KB);
+            } else if (size < GB) {
+                return String.format("%.2f MB", size / (float) MB);
+            } else if (size < TB) {
+                return String.format("%.2f GB", size / (float) GB);
+            } else {
+                return String.format("%.2f TB", size / (float) TB);
+            }
+        }
+        return "0 B";
+    }
+
+    public static List<AdvanceFile> listDir(@NonNull File dirFile, boolean recursively) {
+        List<AdvanceFile> lists = new ArrayList<>();
+        if (dirFile.isDirectory()) {
+            File[] listedFiles = dirFile.listFiles();
+            if (notNull(listedFiles)) {
+                List<AdvanceFile> infoUtils = new ArrayList<>();
+                for (File list : listedFiles) {
+                    infoUtils.add(new AdvanceFile(list.getAbsolutePath()));
+                }
+                Collections.sort(infoUtils, new AdvanceFile.XFileComparator());
+                for (AdvanceFile list : infoUtils) {
+                    if (list.isDirectory() && recursively) {
+                        lists.addAll(listDir(new File(list.getPath()), true));
+                    }
+                    lists.add(list);
+                }
+            }
+        }
+        return lists;
+    }
+
+    public static List<AdvanceFile> listDir(@NonNull String dirPath, boolean recursively) {
+        return listDir(new File(dirPath), recursively);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public static List<AdvanceFile> listDir(@NonNull Context context, @NonNull File dirFile, boolean recursively) {
+        List<AdvanceFile> lists = new ArrayList<>();
+        if (dirFile.isDirectory()) {
+            ContentResolver contentResolver = context.getContentResolver();
+            Uri collection = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL) : MediaStore.Files.getContentUri("external");
+            String column = MediaStore.Files.FileColumns.DATA;
+            String[] projection = {column};
+            String selection = column + " LIKE ? AND " + column + " NOT LIKE ?";
+            String[] selectionArgs = new String[]{"%" + dirFile.getAbsolutePath() + "/%", "%" + dirFile.getAbsolutePath() + "/%/%"};
+            String sortOrder = column + " DESC";
+            Cursor cursor = contentResolver.query(collection, projection, selection, selectionArgs, sortOrder);
+            if (notNull(cursor)) {
+                try {
+                    List<AdvanceFile> infoUtils = new ArrayList<>();
+                    // Cache column indices.
+                    int dataColumn = cursor.getColumnIndexOrThrow(column);
+                    while (cursor.moveToNext()) {
+                        // Get values of columns indices
+                        String path = cursor.getString(dataColumn);
+                        infoUtils.add(new AdvanceFile(path));
+                    }
+                    Collections.sort(infoUtils, new AdvanceFile.XFileComparator());
+                    for (AdvanceFile list : infoUtils) {
+                        if (list.isDirectory() && recursively) {
+                            lists.addAll(listDir(context, new File(list.getAbsolutePath()), true));
+                        }
+                        lists.add(list);
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+        }
+        return lists;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public static List<AdvanceFile> listDir(@NonNull Context context, @NonNull String dirPath, boolean recursively) {
+        return listDir(context, new File(dirPath), recursively);
+    }
+
+    public static String getExtension(@NonNull String name) {
+        String extension = "";
+        int lastIndex = name.lastIndexOf(".");
+        if (lastIndex != -1) {
+            return name.substring(lastIndex + 1);
+        }
+        return extension;
+    }
+
+    public static String getPathLastSegment(@NonNull String name) {
+        int lastIndex = name.lastIndexOf(File.separator);
+        if (lastIndex != -1) {
+            return name.substring(lastIndex + 1);
+        }
+        return name;
+    }
+
+    public static String removeExtension(@NonNull String name) {
+        int lastIndex = name.lastIndexOf(".");
+        if (lastIndex != -1) {
+            return name.substring(0, lastIndex);
+        }
+        return name;
+    }
+
+    public static boolean isServiceRunning(@NonNull Context context, @NonNull Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (notNull(manager)) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (serviceClass.getName().equals(service.service.getClassName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static ComponentName startService(@NonNull Context context, @NonNull Class<?> serviceClass) {
+        return startService(context, new Intent(context, serviceClass));
+    }
+
+    public static ComponentName startService(@NonNull Context context, @NonNull Intent serviceIntent) {
+        try {
+            return context.startService(serviceIntent);
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public static ComponentName startForegroundService(@NonNull Context context, @NonNull Class<?> serviceClass) {
+        return startForegroundService(context, new Intent(context, serviceClass));
+    }
+
+    public static ComponentName startForegroundService(@NonNull Context context, @NonNull Intent serviceIntent) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                return context.startForegroundService(serviceIntent);
+            }
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public static boolean stopService(@NonNull Context context, @NonNull Class<?> serviceClass) {
+        try {
+            return context.stopService(new Intent(context, serviceClass));
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return false;
+    }
+
+    public static boolean stopService(@NonNull Context context, @NonNull Intent intent) {
+        try {
+            return context.stopService(intent);
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return false;
+    }
+
+    public static String generateRandomText(int length) {
+        int textLength = Math.max(1, Math.min(length, 32));
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder builder = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            builder.append(characters.charAt(index));
+        }
+        return builder.toString();
+    }
+
+    public static int generateRandomInt(int length) {
+        int textLength = Math.max(1, Math.min(length, 32));
+        Random random = new Random();
+        int min = (int) Math.pow(10, length - 1);
+        int max = (int) Math.pow(10, length) - 1;
+        return random.nextInt(max - min + 1) + min;
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte b : bytes) {
+            result.append(String.format("%02X", b));
+        }
+        return result.toString();
+    }
+
+    public static boolean validJson(@NonNull String content) {
+        try {
+            new JSONObject(content);
+            return true;
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
+    public static JSONObject Json(@NonNull String content) {
+        try {
+            return new JSONObject(content);
+        } catch (Throwable throwable) {
+            return null;
+        }
+    }
+
+    public static Object getDataFromJsonObject(@Nullable JSONObject object, @NonNull String key) {
+        try {
+            return notNull(object) && object.has(key) ? object.get(key) : null;
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    public static void setTextIsSelectable(@NonNull TextView textView, boolean isSelectable) {
+        textView.setTextIsSelectable(isSelectable);
+    }
+
+    public static void clearFocus(@NonNull View view) {
+        view.clearFocus();
+    }
+
+    public static void clearAnimation(@NonNull View view) {
+        view.clearAnimation();
+    }
+
+    public static boolean isSeekbarPressed(@NonNull SeekBar seekBar) {
+        return seekBar.isPressed();
+    }
+
+    public static void openWhatsapp(@NonNull Context context, String message, String number) {
+        try {
+            // Open WhatsApp using Intent
+            Uri uri = Uri.parse("https://api.whatsapp.com/send?phone=" + number + "&text=" + message);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            context.startActivity(intent);
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static void openLink(@NonNull Context context, @NonNull String url) {
+        try {
+            openBrowser(context, url);
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static void registerContextMenu(@NonNull Activity activity, @NonNull View view) {
+        activity.registerForContextMenu(view);
+    }
+
+    public static void setStatusBarColor(@NonNull Activity activity, int color) {
+        Window window = activity.getWindow();
+        window.setStatusBarColor(color);
+    }
+
+    public static void setTranslucentStatusBar(@NonNull Activity activity, boolean addFlags) {
+        Window window = activity.getWindow();
+        if (addFlags) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        }
+    }
+
+    public static void speechEngine(@NonNull Context context, @NonNull Locale localLanguage, SpeechCallback speechCallback) {
+        textToSpeech = new TextToSpeech(context, status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                int resultLanguage = textToSpeech.setLanguage(localLanguage);
+                if (resultLanguage == TextToSpeech.LANG_MISSING_DATA || resultLanguage == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    if (notNull(speechCallback)) {
+                        speechCallback.onError("Language isn't supported.");
+                    }
+                } else {
+                    if (notNull(speechCallback)) {
+                        speechCallback.onSuccess(textToSpeech);
+                    }
+                }
+            } else {
+                if (notNull(speechCallback)) {
+                    speechCallback.onError("Initialization failed.");
+                }
+            }
+        });
+    }
+
+    public static void cropImage(@NonNull Activity activity, @NonNull String path, int requestCode) {
+        try {
+            Intent intent = new Intent("com.android.camera.action.CROP");
+            File file = new File(path);
+            Uri contentUri = Uri.fromFile(file);
+            intent.setDataAndType(contentUri, "image/*");
+            intent.putExtra("crop", "true");
+            intent.putExtra("aspectX", 1);
+            intent.putExtra("aspectY", 1);
+            intent.putExtra("outputX", 280);
+            intent.putExtra("outputY", 280);
+            intent.putExtra("return-data", false);
+            activity.startActivityForResult(intent, requestCode);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(activity, "Your device doesn't support the crop action!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public static void showToast(@NonNull Context context, @NonNull String message) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public static int getLocationX(@NonNull View view) {
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        return location[0];
+    }
+
+    public static int getLocationY(@NonNull View view) {
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        return location[1];
+    }
+
+    public static int getRandom(int min, int max) {
+        Random random = new Random();
+        return random.nextInt(max - min + 1) + min;
+    }
+
+    public static int getDisplayWidthPixels(@NonNull Context context) {
+        return context.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    public static int getDisplayHeightPixels(@NonNull Context context) {
+        return context.getResources().getDisplayMetrics().heightPixels;
+    }
+
+    public static float getDip(@NonNull Context context, int input) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, input, context.getResources().getDisplayMetrics());
+    }
+
+    public static boolean validImage(@NonNull String path) {
+        List<String> knownImageExtensions = Arrays.asList("png", "jpg", "jpeg", "gif", "bmp", "webp", "jfif", "tiff", "heif", "bat", "bpg", "svg");
+        return isFile(path) && knownImageExtensions.contains(getExtension(path));
+    }
+
+    public static boolean validVideo(@NonNull String path) {
+        List<String> knownVideoExtensions = Arrays.asList("mp4", "3gp", "mkv", "avi", "flv", "mov", "wmv", "webm", "vob", "ogv", "mpg", "m4v", "m2ts", "ts", "mpeg", "divx", "asf", "rm", "ram");
+        return isFile(path) && knownVideoExtensions.contains(getExtension(path));
+    }
+
+    public static HashMap<String, String> getDefaultFilesMime() {
+        HashMap<String, String> mimes = new HashMap<>();
+        mimes.put("css", "text/css");
+        mimes.put("htm", "text/html");
+        mimes.put("html", "text/html");
+        mimes.put("xml", "text/xml");
+        mimes.put("java", "text/x-java-source, text/java");
+        mimes.put("md", "text/plain");
+        mimes.put("txt", "text/plain");
+        mimes.put("asc", "text/plain");
+        mimes.put("gif", "image/gif");
+        mimes.put("jpg", "image/jpeg");
+        mimes.put("jpeg", "image/jpeg");
+        mimes.put("png", "image/png");
+        mimes.put("svg", "image/svg+xml");
+        mimes.put("mp3", "audio/mpeg");
+        mimes.put("m3u", "audio/mpeg-url");
+        mimes.put("mp4", "video/mp4");
+        mimes.put("ogv", "video/ogg");
+        mimes.put("flv", "video/x-flv");
+        mimes.put("mov", "video/quicktime");
+        mimes.put("swf", "application/x-shockwave-flash");
+        mimes.put("js", "application/javascript");
+        mimes.put("pdf", "application/pdf");
+        mimes.put("doc", "application/msword");
+        mimes.put("ogg", "application/x-ogg");
+        mimes.put("zip", "application/octet-stream");
+        mimes.put("json", "application/json");
+        mimes.put("exe", "application/octet-stream");
+        mimes.put("class", "application/octet-stream");
+        mimes.put("m3u8", "application/vnd.apple.mpegurl");
+        mimes.put("ts", "video/mp2t");
+        // Additional MIME types
+        mimes.put("tif", "image/tiff");
+        mimes.put("tiff", "image/tiff");
+        mimes.put("heif", "image/heif");
+        mimes.put("bat", "application/bat");
+        mimes.put("bpg", "image/bpg");
+        mimes.put("jfif", "image/jpeg");
+        mimes.put("webp", "image/webp");
+        mimes.put("webm", "video/webm");
+        mimes.put("vob", "video/dvd");
+        mimes.put("ogm", "video/ogg");
+        mimes.put("mpeg", "video/mpeg");
+        mimes.put("divx", "video/x-divx");
+        mimes.put("asf", "video/x-ms-asf");
+        mimes.put("rm", "application/vnd.rn-realmedia");
+        mimes.put("ram", "audio/x-pn-realaudio");
+        return mimes;
+    }
+
+    public static String getMimeFromExtension(@Nullable String extension) {
+        HashMap<String, String> mimes = getDefaultFilesMime();
+        return notNull(extension) && mimes.containsKey(extension) ? mimes.get(extension) : null;
+    }
+
+    public static String getMimeTypeFromExtension(@Nullable String extension) {
+        return notNull(extension) ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase()) : null;
+    }
+
+    public static Bitmap extractVideoFrame(@NonNull String path, int milliseconds) {
+        try {
+            MediaMetadataRetriever receiver = new MediaMetadataRetriever();
+            receiver.setDataSource(path);
+            Bitmap bitmap = receiver.getFrameAtTime(milliseconds, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            receiver.release();
+            receiver.close();
+            return bitmap;
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return null;
+    }
+
+    // Method to close a closeable
+    public static void closeQuietly(@Nullable Closeable closeable) {
+        try {
+            if (notNull(closeable)) {
+                closeable.close();
+            }
+        } catch (RuntimeException e) {
+            Log.e(TAG, e.getMessage(), e);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void createFile(@Nullable String path) {
+        if (notNull(path) && !isExist(path)) {
+            try {
+                boolean create = new File(path).createNewFile();
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
+    }
+
+    public static void createFile(@Nullable File file) {
+        if (notNull(file)) {
+            createFile(file.getAbsolutePath());
+        }
+    }
+
+    public static String createTempFile() throws IOException {
+        return File.createTempFile(generateRandomText(32), "").getAbsolutePath();
+    }
+
+    public static void createDirectory(@Nullable String path) {
+        if (notNull(path)) {
+            createDirectory(new File(path));
+        }
+    }
+
+    public static void createDirectory(@Nullable File file) {
+        if (notNull(file) && !file.isDirectory()) {
+            try {
+                file.mkdirs();
+            } catch (SecurityException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
+    }
+
+    public static void delete(@Nullable String path) {
+        if (notNull(path)) {
+            File file = new File(path);
+            if (file.exists()) {
+                if (file.isFile()) {
+                    boolean delete = file.delete();
+                } else if (file.isDirectory()) {
+                    File[] lists = Objects.requireNonNull(file.listFiles());
+                    for (File list : lists) {
+                        if (list.isDirectory()) {
+                            delete(list.getAbsolutePath());
+                        } else if (list.isFile()) {
+                            boolean delete = list.delete();
+                        }
+                    }
+                    boolean delete = file.delete();
+                }
+            }
+        }
+    }
+
+    public static void delete(@Nullable File absoluteFile) {
+        if (notNull(absoluteFile)) {
+            delete(absoluteFile.getAbsolutePath());
+        }
+    }
+
+    public static boolean isExist(@Nullable String path) {
+        if (notNull(path)) {
+            return new File(path).exists();
+        }
+        return false;
+    }
+
+    public static String getFileContent(@Nullable String path) {
+        return getFileContent(new File(path));
+    }
+
+    public static String getFileContent(@Nullable String path, boolean deletePath) {
+        return getFileContent(new File(path), deletePath);
+    }
+
+    public static String getFileContent(@Nullable File file) {
+        StringBuilder builder = new StringBuilder();
+        if (notNull(file) && file.isFile() && file.canRead()) {
+            try (FileInputStream in = new FileInputStream(file)) {
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    builder.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8));
+                }
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
+        return builder.toString();
+    }
+
+    public static String getFileContent(@Nullable File file, boolean deleteFile) {
+        String content = getFileContent(file);
+        if (deleteFile) {
+            delete(file);
+        }
+        return content;
+    }
+
+    /**
+     * Copies a file from the source path to the destination path.
+     *
+     * @param sourcePath      The path of the source file.
+     * @param destinationPath The path of the destination file.
+     * @param callback        A callback to monitor progress (nullable).
+     * @throws IOException If an I/O error occurs.
+     */
+    public static void copyFile(@NonNull String sourcePath, @NonNull String destinationPath, @Nullable CopyBytesChangedCallback callback) throws IOException {
+        File sourceFile = new File(sourcePath);
+        File destinationFile = new File(destinationPath);
+        // Validate source file
+        if (!sourceFile.exists() || !sourceFile.isFile()) {
+            throw new IOException("Source file does not exist or is not a valid file: " + sourcePath);
+        }
+        // Ensure source and destination are not the same
+        else if (sourceFile.getCanonicalPath().equals(destinationFile.getCanonicalPath())) {
+            throw new IOException("Source and destination paths must be different.");
+        }
+        // Ensure destination directory exists
+        else {
+            File parentDir = destinationFile.getParentFile();
+            if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
+                throw new IOException("Failed to create destination directory: " + parentDir.getAbsolutePath());
+            }
+            // File copy operation
+            else {
+                try (FileInputStream reader = new FileInputStream(sourceFile); FileOutputStream writer = new FileOutputStream(destinationFile, false)) {
+                    long totalBytes = sourceFile.length();
+                    long bytesToTotalBytes = 0;
+                    byte[] buffer = new byte[BUFFER_SIZE];
+                    int bytesRead;
+                    while ((bytesRead = reader.read(buffer)) != -1) {
+                        writer.write(buffer, 0, bytesRead);
+                        bytesToTotalBytes += bytesRead;
+                        // Notify callback if provided
+                        if (notNull(callback) && totalBytes > 0) {
+                            int progress = (int) Math.min((bytesToTotalBytes * 100L) / totalBytes, 100);
+                            callback.onChanged(bytesToTotalBytes, totalBytes, progress);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static void copyUri(@NonNull Context context, @NonNull Uri uri, @NonNull String destinationPath, @Nullable CopyBytesChangedCallback callback) throws IOException {
+        ContentResolver resolver = context.getContentResolver();
+        try (InputStream reader = resolver.openInputStream(uri); OutputStream writer = new FileOutputStream(destinationPath)) {
+            if (isNull(reader)) {
+                throw new IOException("Failed to open InputStream for the provided Uri.");
+            } else {
+                // Get the total file size (if possible)
+                try (ParcelFileDescriptor descriptor = resolver.openFileDescriptor(uri, "r")) {
+                    long totalBytes = descriptor.getStatSize();
+                    long bytesToTotalBytes = 0;
+                    byte[] buffer = new byte[BUFFER_SIZE];
+                    int bytesRead;
+                    while ((bytesRead = reader.read(buffer)) != -1) {
+                        writer.write(buffer, 0, bytesRead);
+                        bytesToTotalBytes += bytesRead;
+                        // Notify progress through callback
+                        if (notNull(callback) && totalBytes > 0) {
+                            int progress = (int) Math.min((bytesToTotalBytes * 100L) / totalBytes, 100);
+                            callback.onChanged(bytesToTotalBytes, totalBytes, progress);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static void copyDirectory(@NonNull String sourcePath, @NonNull String destinationPath) {
+        File source = new File(sourcePath);
+        File destination = new File(destinationPath);
+        if (source.isDirectory()) {
+            createDirectory(destination.getAbsolutePath());
+            File[] files = source.listFiles();
+            if (notNull(files)) {
+                for (File file : files) {
+                    copyDirectory(file.getAbsolutePath(), new File(destination.getAbsolutePath(), file.getName()).getAbsolutePath());
+                }
+            }
+        } else {
+            try {
+                copyFile(source.getAbsolutePath(), destination.getAbsolutePath());
+            } catch (Throwable ignored) {
+            }
+        }
+    }
+
+    public static void copyFile(@NonNull String sourcePath, @NonNull String destPath) throws IOException {
+        try (FileChannel sourceChannel = new FileInputStream(sourcePath).getChannel(); FileChannel destChannel = new FileOutputStream(destPath).getChannel()) {
+            destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+        }
+    }
+
+    public static void moveOrRenameFile(@NonNull String sourcePath, @NonNull String destPath) {
+        File sourceFile = new File(sourcePath);
+        File destFile = new File(destPath);
+        if (sourceFile.isFile()) {
+            String parent = destFile.getParent();
+            if (notNull(parent)) {
+                createDirectory(parent);
+                if (isDirectory(parent)) {
+                    boolean renamed = sourceFile.renameTo(destFile);
+                }
+            }
+        }
+    }
+
+    public static boolean isDirectory(@Nullable String path) {
+        return notNull(path) && isDirectory(new File(path));
+    }
+
+    public static boolean isDirectory(@Nullable File path) {
+        return notNull(path) && path.isDirectory();
+    }
+
+    public static boolean isFile(@Nullable String path) {
+        return notNull(path) && isFile(new File(path));
+    }
+
+    public static boolean isFile(@Nullable File path) {
+        return notNull(path) && path.isFile();
+    }
+
+    public static long getFileLengthOrSize(@NonNull String path) {
+        return isExist(path) ? new File(path).length() : 0;
+    }
+
+    public static String getExternalStorageDir() {
+        return Environment.getExternalStorageDirectory().getAbsolutePath();
+    }
+
+    public static String getPackageDataDir(@NonNull Context context) {
+        File dir = context.getExternalFilesDir(null);
+        return notNull(dir) ? dir.getAbsolutePath() : null;
+    }
+
+    public static String getPublicDir(@NonNull String type) {
+        return !type.isEmpty() ? Environment.getExternalStoragePublicDirectory(type).getAbsolutePath() : null;
+    }
+
+    public static void saveBitmap(@NonNull Bitmap bitmap, @NonNull String destPath) {
+        createFile(destPath);
+        try (FileOutputStream writer = new FileOutputStream(destPath)) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, writer);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    private Bitmap getBitmap(@NonNull Context context, @Nullable File file) {
+        if (notNull(file) && file.isFile()) {
+            try {
+                Uri uri = Uri.fromFile(file);
+                int targetW = 600;
+                int targetH = 600;
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri), null, options);
+                int photoW = options.outWidth;
+                int photoH = options.outHeight;
+                int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+                options.inJustDecodeBounds = false;
+                options.inSampleSize = scaleFactor;
+                return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri), null, options);
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
+    public static Bitmap getScaledBitmap(@NonNull String path, int max) {
+        Bitmap src = BitmapFactory.decodeFile(path);
+        int width = src.getWidth();
+        int height = src.getHeight();
+        float rate = width > height ? max / (float) width : max / (float) height;
+        width = (int) (width * rate);
+        height = (int) (height * rate);
+        return Bitmap.createScaledBitmap(src, width, height, true);
+    }
+
+    public static int calculateInSampleSize(@NonNull BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        final int width = options.outWidth;
+        final int height = options.outHeight;
+        int inSampleSize = 1;
+        if (height > reqHeight || width > reqWidth) {
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
+    public static Bitmap decodeSampleBitmapFromPath(@NonNull String path, int reqWidth, int reqHeight) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeFile(path, options);
+    }
+
+    public static void resizeBitmapFileRetainRatio(@NonNull String fromPath, @NonNull String destPath, int max) {
+        if (!isExist(fromPath)) return;
+        Bitmap bitmap = getScaledBitmap(fromPath, max);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void resizeBitmapFileToSquare(@NonNull String fromPath, @NonNull String destPath, int max) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        Bitmap bitmap = Bitmap.createScaledBitmap(src, max, max, true);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void resizeBitmapFileToCircle(@NonNull String fromPath, @NonNull String destPath) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        Bitmap bitmap = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawCircleOnCanvas(canvas, src);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void resizeBitmapFileWithRoundedBorder(@NonNull String fromPath, @NonNull String destPath, int pixels) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        Bitmap bitmap = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawRoundedBorderOnCanvas(canvas, src, pixels);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void drawCircleOnCanvas(@NonNull Canvas canvas, @NonNull Bitmap src) {
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, src.getWidth(), src.getHeight());
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawCircle((float) src.getWidth() / 2, (float) src.getHeight() / 2, (float) src.getWidth() / 2, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(src, rect, rect, paint);
+    }
+
+    public static void drawRoundedBorderOnCanvas(@NonNull Canvas canvas, @NonNull Bitmap src, int pixels) {
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, src.getWidth(), src.getHeight());
+        final RectF rectF = new RectF(rect);
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawRoundRect(rectF, (float) pixels, (float) pixels, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(src, rect, rect, paint);
+    }
+
+    public static void cropBitmapFileFromCenter(@NonNull String fromPath, @NonNull String destPath, int w, int h) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        int width = src.getWidth();
+        int height = src.getHeight();
+        if (width < w && height < h) return;
+        int x = 0;
+        int y = 0;
+        if (width > w) x = (width - w) / 2;
+        if (height > h) y = (height - h) / 2;
+        int cw = w;
+        int ch = h;
+        if (w > width) cw = width;
+        if (h > height) ch = height;
+        Bitmap bitmap = Bitmap.createBitmap(src, x, y, cw, ch);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void rotateBitmapFile(@NonNull String fromPath, @NonNull String destPath, float angle) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        Bitmap bitmap = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void scaleBitmapFile(@NonNull String fromPath, @NonNull String destPath, float x, float y) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        Matrix matrix = new Matrix();
+        matrix.postScale(x, y);
+        int w = src.getWidth();
+        int h = src.getHeight();
+        Bitmap bitmap = Bitmap.createBitmap(src, 0, 0, w, h, matrix, true);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void skewBitmapFile(@NonNull String fromPath, @NonNull String destPath, float x, float y) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        Matrix matrix = new Matrix();
+        matrix.postSkew(x, y);
+        int w = src.getWidth();
+        int h = src.getHeight();
+        Bitmap bitmap = Bitmap.createBitmap(src, 0, 0, w, h, matrix, true);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void setBitmapFileColorFilter(@NonNull String fromPath, @NonNull String destPath, int color) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        Bitmap bitmap = Bitmap.createBitmap(src, 0, 0, src.getWidth() - 1, src.getHeight() - 1);
+        Paint p = new Paint();
+        ColorFilter filter = new LightingColorFilter(color, 1);
+        p.setColorFilter(filter);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawBitmap(bitmap, 0, 0, p);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void setBitmapFileBrightness(@NonNull String fromPath, @NonNull String destPath, float brightness) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        ColorMatrix cm = new ColorMatrix(new float[]{1, 0, 0, 0, brightness, 0, 1, 0, 0, brightness, 0, 0, 1, 0, brightness, 0, 0, 0, 1, 0});
+        Bitmap bitmap = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColorFilter(new ColorMatrixColorFilter(cm));
+        canvas.drawBitmap(src, 0, 0, paint);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static void setBitmapFileContrast(@NonNull String fromPath, @NonNull String destPath, float contrast) {
+        if (!isExist(fromPath)) return;
+        Bitmap src = BitmapFactory.decodeFile(fromPath);
+        ColorMatrix cm = new ColorMatrix(new float[]{contrast, 0, 0, 0, 0, 0, contrast, 0, 0, 0, 0, 0, contrast, 0, 0, 0, 0, 0, 1, 0});
+        Bitmap bitmap = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColorFilter(new ColorMatrixColorFilter(cm));
+        canvas.drawBitmap(src, 0, 0, paint);
+        saveBitmap(bitmap, destPath);
+    }
+
+    public static int getJpegRotate(@NonNull String filePath) {
+        int rotate = 0;
+        try {
+            ExifInterface exif = new ExifInterface(filePath);
+            int iOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
+
+            switch (iOrientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotate = 90;
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotate = 180;
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotate = 270;
+                    break;
+            }
+        } catch (IOException e) {
+            return 0;
+        }
+
+        return rotate;
+    }
+
+    public static File createNewPictureFile(@NonNull Context context) {
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String fileName = date.format(new Date()) + ".png";
+        return new File(Objects.requireNonNull(context.getExternalFilesDir(Environment.DIRECTORY_DCIM)).getAbsolutePath() + File.separator + fileName);
+    }
+
+    public static long directorySize(@Nullable String path, boolean recursively) {
+        long size = 0;
+        if (notNull(path) && isDirectory(path)) {
+            File[] files = new File(path).listFiles();
+            if (notNull(files)) {
+                for (File file : files) {
+                    if (file.isDirectory() && recursively) {
+                        size += directorySize(file.getAbsolutePath(), true);
+                    } else {
+                        size += file.length();
+                    }
+                }
+            }
+        }
+        return size;
+    }
+
+    public static boolean isDirectoryEmpty(@Nullable String path) {
+        int countedFiles = countFiles(path, null, false);
+        return countedFiles < 1;
+    }
+
+    public static boolean isDirectoryNotEmpty(@Nullable String path) {
+        return !isDirectoryEmpty(path);
+    }
+
+    public static void renameFile(@Nullable String source, @Nullable String destination) {
+        if (notNull(source) && notNull(destination) && isFile(source)) {
+            try {
+                boolean renamed = new File(source).renameTo(new File(destination));
+            } catch (Throwable e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
+    }
+
+    public static boolean canWrite(@NonNull String path) {
+        File absoluteFile = new File(path);
+        return absoluteFile.exists() && absoluteFile.canWrite();
+    }
+
+    public static boolean canExecute(@NonNull String path) {
+        File absoluteFile = new File(path);
+        return absoluteFile.exists() && absoluteFile.canExecute();
+    }
+
+    public static boolean canRead(@NonNull String path) {
+        File absoluteFile = new File(path);
+        return absoluteFile.exists() && absoluteFile.canRead();
+    }
+
+    public static String getParentPath(@Nullable String path) {
+        if (notNull(path)) {
+            File absoluteFile = new File(path);
+            if (absoluteFile.exists()) {
+                File parent = absoluteFile.getParentFile();
+                if (notNull(parent)) {
+                    return parent.getAbsolutePath();
+                }
+            }
+
+        }
+        return null;
+    }
+
+    public static int countFiles(@Nullable String path, @Nullable ArrayList<String> extensions, boolean recursively) {
+        int count = 0;
+        if (notNull(path) && isDirectory(path)) {
+            File[] files = new File(path).listFiles();
+            if (notNull(files)) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        if (extensions == null || hasMatchingExtension(file, extensions)) {
+                            count++;
+                        }
+                    } else if (file.isDirectory()) {
+                        count += recursively ? countFiles(file.getAbsolutePath(), extensions, true) : 1;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    public static String getMimeType(@NonNull String path) {
+        return URLConnection.getFileNameMap().getContentTypeFor(path);
+    }
+
+    public static String randomBasename(@NonNull String extension) {
+        return AdvanceUtils.generateRandomText(20) + Calendar.getInstance().getTimeInMillis() + "." + extension;
+    }
+
+    public static boolean hasMatchingExtension(@NonNull File file, @NonNull ArrayList<String> extensions) {
+        for (String extension : extensions) {
+            if (file.getName().endsWith(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void copyAssetDir(@NonNull Context context, @NonNull String assetDir, @NonNull String destinationDir) {
+        try {
+            AssetManager assetManager = context.getAssets();
+            String[] assets = assetManager.list(assetDir);
+            if (notNull(assets)) {
+                createDirectory(destinationDir);
+                for (String name : assets) {
+                    if (name.contains(".")) {
+                        copyAssetFile(assetManager, assetDir + File.separator + name, destinationDir + File.separator + name);
+                    } else {
+                        copyAssetDir(context, assetDir + File.separator + name, destinationDir + File.separator + name);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static void copyAssetFile(@NonNull AssetManager assetManager, @NonNull String fromAssetPath, @NonNull String toPath) {
+        try {
+            InputStream reader = assetManager.open(fromAssetPath);
+            createFile(toPath);
+            try (FileOutputStream writer = new FileOutputStream(toPath)) {
+                byte[] buffer = new byte[5120]; // 5MB Chunk size
+                int length;
+                while ((length = reader.read(buffer)) > 0) {
+                    writer.write(buffer, 0, length);
+                }
+            }
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    // Unzips a zip file to the specified destination directory
+    public static void unzipAll(@NonNull String zipFilePath, @NonNull String destDirectory, boolean skipDestFile) {
+        try {
+            // Create the destination directory if it does not exist
+            createDirectory(destDirectory);
+            // Open the ZIP file
+            try (ZipFile zip = new ZipFile(zipFilePath)) {
+                // Get an enumeration of the entries in the ZIP file
+                Enumeration<?> enumeration = zip.entries();
+                // Iterate over each entry in the ZIP file
+                while (enumeration.hasMoreElements()) {
+                    // Get the current entry and name
+                    ZipEntry entry = (ZipEntry) enumeration.nextElement();
+                    String name = entry.getName();
+                    // Create a File object for the entry's destination path
+                    File file = new File(destDirectory, name);
+                    // If the checkExistance flag is set to true, it checks if the destination file already exists. If it does, the entry is skipped.
+                    if (!(skipDestFile && file.exists())) {
+                        // If the entry is a directory, create the directory
+                        if (entry.isDirectory()) {
+                            createDirectory(file);
+                        } else {
+                            // Create parent directories if they do not exist
+                            createParentDirForFile(file);
+                            // Create an InputStream to read the entry's data
+                            // Create an OutputStream to write the entry's data to the destination file
+                            try (InputStream in = zip.getInputStream(entry); OutputStream out = new FileOutputStream(file)) {
+                                // Buffer to hold data during the read/write process
+                                byte[] buffer = new byte[BUFFER_SIZE];
+                                int length;
+                                // Read data from the entry and write it to the destination file
+                                while ((length = in.read(buffer)) >= 1) {
+                                    out.write(buffer, 0, length);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            // Handle exceptions appropriately in a real application
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    // Extracts a specific entry from a zip file to the destination directory
+    public static void unzipEntry(@NonNull String zipFilePath, @NonNull String entryToExtract, @NonNull String destDirectory) {
+        try {
+            // Create the destination directory if it does not exist
+            createDirectory(destDirectory);
+            // Open the ZIP file
+            try (ZipFile zip = new ZipFile(zipFilePath)) {
+                // Get the specified entry from the ZIP file
+                ZipEntry entry = zip.getEntry(entryToExtract);
+                // Check if the entry exists in the ZIP file
+                if (notNull(entry)) {
+                    // Create a File object for the entry's destination path
+                    File file = new File(destDirectory, entryToExtract);
+                    // If the entry is a directory, create the directory
+                    if (entry.isDirectory()) {
+                        createDirectory(file);
+                    } else {
+                        // Create parent directories if they do not exist
+                        createParentDirForFile(file);
+                        // Create an InputStream to read the entry's data
+                        // Create an OutputStream to write the entry's data to the destination file
+                        try (InputStream in = zip.getInputStream(entry); OutputStream out = new FileOutputStream(file)) {
+                            // Buffer to hold data during the read/write process
+                            byte[] buffer = new byte[BUFFER_SIZE];
+                            int length;
+                            // Read data from the entry and write it to the destination file
+                            while ((length = in.read(buffer)) >= 0) {
+                                out.write(buffer, 0, length);
+                            }
+                        }
+                    }
+                }
+                // Close the ZIP file
+            }
+        } catch (Throwable e) {
+            // Handle exceptions appropriately in a real application
+            e.printStackTrace();
+        }
+    }
+
+    public static String getZipEntryExtension(@NonNull String zipFilePath, @NonNull String entryName) {
+        String extension = "";
+        try {
+            ZipFile zip = new ZipFile(zipFilePath);
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String name = entry.getName();
+                boolean isDir = entry.isDirectory() || name.endsWith("/");
+                if (!isDir) {
+                    String fileName = entry.getName();
+                    if (fileName.startsWith(entryName) || fileName.equals(entryName)) {
+                        int lastDotIndex = fileName.lastIndexOf('.');
+                        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
+                            extension = fileName.substring(lastDotIndex + 1);
+                        }
+                    }
+                }
+            }
+            zip.close();
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return extension;
+    }
+
+    public static void createParentDirForFile(@Nullable File file) {
+        if (notNull(file)) {
+            createParentDirForFile(file.getAbsolutePath());
+        }
+    }
+
+    public static void createParentDirForFile(@Nullable String path) {
+        if (notNull(path)) {
+            File file = new File(path);
+            File parent = file.getParentFile();
+            if (notNull(parent)) {
+                createDirectory(parent.getAbsolutePath());
+            }
+        }
+    }
+
+    public static void writeDataToFile(@NonNull String path, @NonNull String data) {
+        writeDataToFile(path, data, false);
+    }
+
+    public static void writeDataToFile(@NonNull String path, @NonNull String data, boolean append) {
+        createFile(path);
+        try (FileWriter writer = new FileWriter(path, append)) {
+            writer.write(data);
+            writer.flush();
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static void writeBytesToFile(@NonNull String path, @NonNull byte[] bytes) {
+        writeBytesToFile(path, bytes, false);
+    }
+
+    public static void writeBytesToFile(@NonNull String path, @NonNull byte[] bytes, boolean append) {
+        createFile(path);
+        try (FileOutputStream stream = new FileOutputStream(path, append)) {
+            stream.write(bytes, 0, bytes.length);
+            stream.flush();
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static String readAndEscapeHtmlFile(@NonNull String path) {
+        return readAndEscapeHtmlContent(getFileContent(path));
+    }
+
+    public static String readAndEscapeHtmlContent(@NonNull String htmlContent) {
+        StringBuilder builder = new StringBuilder();
+        for (char c : htmlContent.toCharArray()) {
+            switch (c) {
+                case '<':
+                    builder.append("&lt;");
+                    break;
+                case '>':
+                    builder.append("&gt;");
+                    break;
+                case '\"':
+                    builder.append("&quot;");
+                    break;
+                case '\'':
+                    builder.append("&apos;");
+                    break;
+                default:
+                    builder.append(c);
+                    break;
+            }
+        }
+        return builder.toString();
+    }
+
+    public static ArrayList<String> getEmptyDirectories(@NonNull String path) {
+        ArrayList<String> lists = new ArrayList<>();
+        try {
+            File absoluteFile = new File(path);
+            if (absoluteFile.exists() && absoluteFile.isDirectory()) {
+                File[] listedFiles = absoluteFile.listFiles();
+                if (notNull(listedFiles)) {
+                    if (listedFiles.length > 0) {
+                        for (File listedFile : listedFiles) {
+                            lists.addAll(getEmptyDirectories(listedFile.getAbsolutePath()));
+                        }
+                    } else {
+                        lists.add(path);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return lists;
+    }
+
+    public static void deleteEmptyDirectories(@NonNull String path) {
+        ArrayList<String> emptyDirectories = AdvanceUtils.getEmptyDirectories(path);
+        for (String directory : emptyDirectories) {
+            delete(directory);
+        }
+    }
+
+    /**
+     * The flag indicate whether you want to list user installed, system installed, or all installed packages.
+     * Values are 0, 1, 2. Where 0 is user installed, 1 system installed, 2 all installed packages.
+     * Defaults to 0
+     */
+    public static List<PackageInfo> getInstalledPackagesInformation(@NonNull Context context, int flag) {
+        List<PackageInfo> packages = new ArrayList<>();
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            List<PackageInfo> installedPackages = packageManager.getInstalledPackages(PackageManager.GET_META_DATA);
+            for (PackageInfo packageInfo : installedPackages) {
+                int listFlag = flag != 0 && flag != 1 && flag != 2 ? 0 : flag;
+                boolean isSystem = isSystemInstalledPackage(packageInfo);
+                if ((listFlag == 0 && !isSystem) || (listFlag == 1 && isSystem) || listFlag == 2) {
+                    packages.add(packageInfo);
+                }
+            }
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+
+        if (flag == 0 || flag == 1 || flag == 2) {
+
+        }
+        return packages;
+    }
+
+    public static ArrayList<HashMap<String, Object>> getPackagesInfoData(@NonNull Context context, @NonNull List<PackageInfo> packagesInfo) {
+        ArrayList<HashMap<String, Object>> packagesData = new ArrayList<>();
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            for (PackageInfo packageInfo : packagesInfo) {
+                HashMap<String, Object> data = new HashMap<>();
+                String appName = packageInfo.applicationInfo.loadLabel(packageManager).toString();
+                String packageName = packageInfo.packageName;
+                int versionCode = packageInfo.versionCode;
+                String versionName = packageInfo.versionName;
+                Drawable appIcon = packageInfo.applicationInfo.loadIcon(packageManager);
+                String sourceDir = packageInfo.applicationInfo.sourceDir;
+                data.put("appName", appName);
+                data.put("packageName", packageName);
+                data.put("appSize", new AdvanceFile(sourceDir).length());
+                data.put("appIcon", appIcon);
+                data.put("versionCode", versionCode);
+                data.put("versionName", versionName);
+                data.put("dataDir", packageInfo.applicationInfo.dataDir);
+                data.put("deviceProtectedDataDir", Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? packageInfo.applicationInfo.deviceProtectedDataDir : packageInfo.applicationInfo.dataDir);
+                data.put("nativeLibraryDir", packageInfo.applicationInfo.nativeLibraryDir);
+                data.put("sourceDir", sourceDir);
+                data.put("publicSourceDir", packageInfo.applicationInfo.publicSourceDir);
+                packagesData.add(data);
+            }
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return packagesData;
+    }
+
+    public static boolean isSystemInstalledPackage(@NonNull PackageInfo packagesInfo) {
+        // If this method is returning 0 as result, it means it's user installed apps
+        return (packagesInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+    }
+
+    public static File getInternalCacheDirForPackage(@NonNull Context context, @NonNull String packageName) {
+        try {
+            return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getCacheDir();
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public static File getExternalCacheDirForPackage(@NonNull Context context, @NonNull String packageName) {
+        try {
+            return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getExternalCacheDir();
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public static File getInternalFilesDirForPackage(@NonNull Context context, @NonNull String packageName) {
+        try {
+            return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getFilesDir();
+        } catch (PackageManager.NameNotFoundException e) {
+            // Handle the exception if the package is not found
+            Log.e(TAG, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public static File getExternalFilesDirForPackage(@NonNull Context context, @NonNull String packageName) {
+        try {
+            return context.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY).getExternalFilesDir(null);
+        } catch (PackageManager.NameNotFoundException e) {
+            // Handle the exception if the package is not found
+            Log.e(TAG, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public static boolean copyToClipboard(@NonNull Context context, @NonNull String label, @NonNull String textToCopy) {
+        try {
+            // Get the clipboard manager
+            ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            // Create ClipData object to store the copied text
+            ClipData clipData = ClipData.newPlainText(label, textToCopy);
+            // Set the ClipData to the clipboard
+            clipboardManager.setPrimaryClip(clipData);
+            return true;
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public static void setCornerRadius(@NonNull View view, float radius) {
+        try {
+            Drawable backgroundDrawable = view.getBackground();
+            GradientDrawable gradientDrawable = new GradientDrawable();
+            gradientDrawable.setShape(GradientDrawable.RECTANGLE);
+            gradientDrawable.setCornerRadius(radius);
+            setDrawableColor(gradientDrawable, backgroundDrawable);
+            view.setBackground(gradientDrawable);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static void setDrawableColor(@NonNull GradientDrawable drawable, @NonNull Drawable backgroundDrawable) {
+        if (backgroundDrawable instanceof ColorDrawable) {
+            ColorDrawable colorDrawable = (ColorDrawable) backgroundDrawable;
+            int color = colorDrawable.getColor();
+            drawable.setColor(color);
+        }
+    }
+
+    public static void restartActivity(@NonNull Activity activity) {
+        try {
+            Intent intent = activity.getIntent();
+            activity.startActivity(intent);
+            activity.finish();
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static void restartActivity(@NonNull Context context, @NonNull Activity activity, @NonNull Class<?> targetClass) {
+        try {
+            Intent intent = new Intent(context, targetClass);
+            activity.startActivity(intent);
+            activity.finish();
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static void keepScreen(@NonNull Activity activity, boolean on) {
+        try {
+            int flag = on ? WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON : 0;
+            activity.runOnUiThread(() -> activity.getWindow().addFlags(flag));
+        } catch (Throwable e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static HashMap<String, Object> getMediaInformation(@NonNull Context context, @NonNull String videoPath) {
+        HashMap<String, Object> information = new HashMap<>();
+        try {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(context, Uri.parse(videoPath));
+            information.put("width", retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+            information.put("height", retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+            information.put("duration", retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+            information.put("genre", retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE));
+            information.put("title", retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
+            retriever.release();
+            retriever.close();
+        } catch (Throwable ignored) {
+        }
+        return information;
+    }
+
+    public static long getRemoteFileSize(@NonNull String fileUrl) {
+        long size = -1;
+        try {
+            URL url = new URL(fileUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("HEAD");
+            size = connection.getContentLength();
+            connection.disconnect();
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return size;
+    }
+
+    public static String getDefaultBrowserPackageName(@NonNull Context context) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+        PackageManager packageManager = context.getPackageManager();
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        return !resolveInfoList.isEmpty() ? resolveInfoList.get(0).activityInfo.packageName : null;
+    }
+
+    public static void openBrowser(@NonNull Context context, @NonNull String url, @NonNull String packageName) throws Exception {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            intent.setPackage(packageName);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        } catch (Throwable e) {
+            throw new Exception("Error opening URL in browser", e);
+        }
+    }
+
+    public static void openBrowser(@NonNull Context context, @NonNull String url) throws Exception {
+        String defaultBrowserPackageName = AdvanceUtils.getDefaultBrowserPackageName(context);
+        String browserPackageName = isNull(defaultBrowserPackageName) ? "com.android.chrome" : defaultBrowserPackageName;
+        openBrowser(context, url, browserPackageName);
+    }
+
+    public static void openChromeBrowser(@NonNull Context context, @NonNull String url) {
+        /*List<String> origins = new ArrayList<>();
+        origins.add(url);
+        Uri uri = Uri.parse(url);
+        TrustedWebActivityIntentBuilder builder = new TrustedWebActivityIntentBuilder(uri);
+        builder.setAdditionalTrustedOrigins(origins);
+        new TwaLauncher(context).launch(builder, null, null, null);*/
+    }
+
+    private static Intent createDispatchTakePictureIntent(@NonNull Context context) {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (notNull(intent.resolveActivity(context.getPackageManager()))) {
+            return intent;
+        }
+        return null;
+    }
+
+    public static Uri dispatchTakePictureIntent(@NonNull Context context, @NonNull Activity activity, @NonNull String authority, int requestCode) {
+        Intent intent = createDispatchTakePictureIntent(context);
+        if (notNull(intent)) {
+            try {
+                if (notNull(intent.resolveActivity(context.getPackageManager()))) {
+                    StorageUtils storageUtils = new StorageUtils(context);
+                    String directory = storageUtils.getExternalStorageDirectory() + File.separator + "Pictures";
+                    AdvanceUtils.createDirectory(directory);
+                    String path = directory + File.separator + generateFilename("", "jpg", true);
+                    Uri uriForFile = FileProvider.getUriForFile(context, authority, new File(path));
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, uriForFile);
+                    activity.startActivityForResult(intent, requestCode);
+                    return uriForFile;
+                }
+            } catch (Throwable e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
+    public static void dispatchTakePictureIntent(@NonNull Context context, @NonNull Activity activity, int requestCode) {
+        Intent intent = createDispatchTakePictureIntent(context);
+        if (notNull(intent)) {
+            activity.startActivityForResult(intent, requestCode);
+        }
+    }
+
+    public static String generateFilename(@Nullable String prefix, @Nullable String surfix, boolean toLowercase) {
+        String filename = (notNull(prefix) ? prefix : "") + generateRandomText(32) + (notNull(surfix) ? "." + surfix : "");
+        return toLowercase ? filename.toLowerCase() : filename.toUpperCase();
+    }
+
+    public static String generateCacheFilename(@NonNull Context context, @Nullable String prefix, @Nullable String surfix, boolean toLowercase) {
+        String filename = context.getCacheDir().getAbsolutePath() + (notNull(prefix) ? prefix : "") + generateRandomText(32) + (notNull(surfix) ? "." + surfix : "");
+        return toLowercase ? filename.toLowerCase() : filename.toUpperCase();
+    }
+
+    /**
+     * Checks if the app is currently ignoring battery optimizations.
+     *
+     * @param context the application context
+     * @return true if the app is ignoring battery optimizations or running on a version where it's not applicable
+     */
+    @SuppressLint("ObsoleteSdkInt")
+    public static boolean isBatteryOptimizingApp(@NonNull Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            String packageName = context.getPackageName();
+            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            if (notNull(powerManager)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    return powerManager.isIgnoringBatteryOptimizations(packageName);
+                }
+            }
+        }
+        // Return true for older Android versions where battery optimization is not applicable
+        return true;
+    }
+
+    /**
+     * Requests the user to exclude the app from battery optimizations.
+     *
+     * @param context     the application context
+     * @param activity    the activity from which the intent is launched
+     * @param requestCode the request code for tracking the result in onActivityResult
+     */
+    @SuppressLint({"BatteryLife", "ObsoleteSdkInt"})
+    public static void requestAppBatteryOptimization(@NonNull Context context, @NonNull Activity activity, int requestCode) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Intent optimizationIntent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            optimizationIntent.setData(Uri.parse("package:" + context.getPackageName()));
+            activity.startActivityForResult(optimizationIntent, requestCode);
+        }
+    }
+
+    /**
+     * Requests device admin permission for the app.
+     *
+     * @param context          the application context
+     * @param activity         the activity from which the intent is launched
+     * @param deviceAdminClass the class extending DeviceAdminReceiver
+     * @param explanation      a user-friendly explanation of why the permission is needed
+     * @param requestCode      the request code for tracking the result in onActivityResult
+     */
+    public static <T extends DeviceAdminReceiver> void requestDeviceAdminPermission(@NonNull Context context, @NonNull Activity activity, @NonNull Class<T> deviceAdminClass, @NonNull String explanation, int requestCode) {
+        if (!isDeviceAdminEnabled(context, deviceAdminClass)) {
+            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+            ComponentName componentName = new ComponentName(context, deviceAdminClass);
+            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
+            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, explanation);
+            activity.startActivityForResult(intent, requestCode);
+        }
+    }
+
+    /**
+     * Checks if device admin permission is enabled for the given receiver class.
+     *
+     * @param context          the application context
+     * @param deviceAdminClass the class extending DeviceAdminReceiver
+     * @return true if the device admin permission is enabled; false otherwise
+     */
+    public static <T extends DeviceAdminReceiver> boolean isDeviceAdminEnabled(@NonNull Context context, @NonNull Class<T> deviceAdminClass) {
+        DevicePolicyManager devicePolicyManager = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        if (notNull(devicePolicyManager)) {
+            ComponentName componentName = new ComponentName(context, deviceAdminClass);
+            return devicePolicyManager.isAdminActive(componentName);
+        }
+        return false;
+    }
+
+    public static void clearAppFromRecent(@NonNull Context context) {
+        ClearRecentUtils clearRecentUtils = new ClearRecentUtils(context);
+        clearRecentUtils.clearAppFromRecent();
+    }
+
+    public static void clearAppCache(@NonNull Context context) {
+        ClearCacheUtils clearCacheUtils = new ClearCacheUtils(context);
+        clearCacheUtils.clearInternalCache();
+        clearCacheUtils.clearExternalCache();
+    }
+
+    public static boolean isActivityDestroyed(@NonNull Context context) {
+        if (context instanceof AppCompatActivity) {
+            AppCompatActivity activity = (AppCompatActivity) context;
+            return activity.isFinishing() || activity.getLifecycle().getCurrentState() == Lifecycle.State.DESTROYED;
+        }
+        return true;
+    }
+
+    public static String executeCommand(@NonNull String command) {
+        Process process = null;
+        try {
+            StringBuilder builder = new StringBuilder();
+            // Execute the command
+            process = Runtime.getRuntime().exec(command);
+            // Obtain input, output, and error streams
+            OutputStream outputStream = process.getOutputStream();
+            InputStream inputStream = process.getInputStream();
+            InputStream errorStream = process.getErrorStream();
+            // Read output lines
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while (notNull((line = reader.readLine()))) {
+                builder.append(line).append("\n");
+            }
+            // Wait for the command to finish
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                return builder.toString();
+            } else {
+                return null;
+            }
+        } catch (IOException | InterruptedException e) {
+            Log.e(TAG, e.getMessage(), e);
+            return null;
+        } finally {
+            if (notNull(process)) {
+                process.destroy();
+            }
+        }
+    }
+
+    public static boolean canLunchPackage(@NonNull Context context, @NonNull String packageName) {
+        PackageManager pm = context.getPackageManager();
+        Intent launchIntent = pm.getLaunchIntentForPackage(packageName);
+        return notNull(launchIntent);
+    }
+
+    public static String getApplicationLabel(@NonNull Context context) {
+        String label = null;
+        try {
+            String packageName = context.getPackageName(); // Get the application's package name
+            PackageManager packageManager = context.getPackageManager(); // Get the PackageManager
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(packageName, 0); // Retrieve the ApplicationInfo
+            label = packageManager.getApplicationLabel(applicationInfo).toString();
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+        return label;
+    }
+
+    public static String getInstanceOf(@Nullable Object object) {
+        String instance = "Unkown";
+        if (object instanceof String) {
+            instance = "String";
+        } else if (object instanceof Integer) {
+            instance = "Integer";
+        } else if (object instanceof Float) {
+            instance = "Float";
+        } else if (object instanceof Double) {
+            instance = "Double";
+        } else if (object instanceof Long) {
+            instance = "Long";
+        }
+        return instance;
+    }
+
+    public static boolean isValidAPKFile(File file) {
+        if (isFile(file.getAbsolutePath())) {
+            ApkInfoExtractor info = new ApkInfoExtractor(file);
+            if (notNull(info.getAppInfo())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isValidAPKFile(@NonNull String filename) {
+        return isValidAPKFile(new File(filename));
+    }
+
+    public static boolean notNull(@Nullable Object arg) {
+        return !isNull(arg);
+    }
+
+    public static boolean isNull(@Nullable Object arg) {
+        return arg == null;
+    }
+
+    public static String getBasename(@NonNull String absolutePath) {
+        return AdvanceUtils.getPathLastSegment(absolutePath);
+    }
+
+    public static String getPath(@Nullable File file) {
+        return notNull(file) ? file.getPath() : "";
+    }
+
+    public static String getPath(@Nullable String filename) {
+        return getPath(new File(filename));
+    }
+
+    public static boolean notZero(int value) {
+        return value != 0;
+    }
+
+    public static boolean isZero(int value) {
+        return value == 0;
+    }
+
+    public static HashMap<String, Object> cloneAaa(@NonNull HashMap<String, Object> original) {
+        return new HashMap<>(original);
+    }
+
+    public static String getCurrentMethodName() {
+        // The 2nd element in the stack trace corresponds to the caller method
+        return Thread.currentThread().getStackTrace()[2].getMethodName();
+    }
+
+    /**
+     * Creates an X509TrustManager for SSL context configuration.
+     *
+     * @param certFile Optional certificate file for server verification.
+     * @return An X509TrustManager instance.
+     * @throws GeneralSecurityException If an SSL issue occurs.
+     * @throws IOException              If the certificate file cannot be read.
+     */
+    @SuppressLint("CustomX509TrustManager")
+    public static X509TrustManager unsafeTrustManager(@Nullable AdvanceFile certFile) throws GeneralSecurityException, IOException {
+        final Certificate certificate = getCertificateFromFile(certFile);
+        return new X509TrustManager() {
+            @SuppressLint("TrustAllX509TrustManager")
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                // Do nothing - trust all clients
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                // Trust server certificate with custom certitificate if specified
+                if (notNull(certificate)) {
+                    for (X509Certificate cert : chain) {
+                        try {
+                            cert.verify(certificate.getPublicKey());
+                            return; // Verification succeeded
+                        } catch (Throwable throwable) {
+                            Log.e(TAG, "Verification failed for certificate: " + cert.getSubjectDN(), throwable);
+                        }
+                    }
+                    throw new CertificateException("No server certificates match the provided certificate.");
+                }
+                // If no custom certificate is provided, trust all server certificates (insecure)
+                Log.w(TAG, "No custom certificate provided. Trusting all server certificates.");
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        };
+    }
+
+    public static Certificate getCertificateFromFile(@Nullable AdvanceFile certFile) {
+        if (notNull(certFile) && certFile.isFile() && certFile.canRead()) {
+            try (InputStream inputStream = new BufferedInputStream(new FileInputStream(certFile))) {
+                CertificateFactory factory = CertificateFactory.getInstance("X.509");
+                return factory.generateCertificate(inputStream);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to load certificate from file: " + certFile.getAbsolutePath(), e);
+            }
+        } else {
+            Log.w(TAG, "Invalid or unreadable certificate file. Falling back to trusting all certificates.");
+        }
+        return null;
+    }
+
+    public static OkHttpClient getUnsafeOkHttpClient(@Nullable AdvanceFile certFile, int socketTimeout, int readTimeout) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        try {
+            System.setProperty("javax.net.debug", "ssl");
+            X509TrustManager trustManager = unsafeTrustManager(certFile);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+            builder.sslSocketFactory(sslSocketFactory, trustManager);
+            builder.connectTimeout(socketTimeout, TimeUnit.MILLISECONDS);
+            builder.readTimeout(readTimeout, TimeUnit.MILLISECONDS);
+            builder.writeTimeout(readTimeout, TimeUnit.MILLISECONDS);
+            builder.hostnameVerifier((hostname, session) -> true);
+            return builder.build();
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            return builder.build();
+        }
+    }
+
+    /**
+     * Sets the text size of a TextView (or its subclasses) based on a percentage of the screen's width or height.
+     * The size is calculated in sp for consistency across devices.
+     *
+     * @param view         the TextView, EditText, Button, or MaterialButton
+     * @param percentage   the percentage of the screen dimension
+     * @param basedOnWidth true to base the calculation on screen width, false for height
+     */
+    public static void setTextSizePercentage(@NonNull View view, float percentage, boolean basedOnWidth) {
+        if (view instanceof TextView) {
+            DisplayMetrics displayMetrics = view.getContext().getResources().getDisplayMetrics();
+            Context context = view.getContext();
+            float textSizeInPx = calculateTextSizeInPx(context, percentage, basedOnWidth);
+            float textSizeInSp = pxToSp(context, textSizeInPx);
+            // Cast to TextView to set text size in sp
+            ((TextView) view).setTextSize(textSizeInPx);
+        } else {
+            System.err.println("View must be an instance of TextView, EditText, Button, or MaterialButton");
+        }
+    }
+
+    /**
+     * Converts pixels (px) to scale-independent pixels (sp).
+     *
+     * @param context the context to access resources and metrics
+     * @param px      the pixel value to convert
+     * @return the equivalent value in sp
+     */
+    public static float pxToSp(@NonNull Context context, float px) {
+        return px / context.getResources().getDisplayMetrics().scaledDensity;
+    }
+
+    /**
+     * Calculates text size in px based on the percentage of the screen's width or height.
+     *
+     * @param context      the context to access resources and metrics
+     * @param percentage   the percentage of the screen dimension
+     * @param basedOnWidth true to base the calculation on screen width, false for height
+     * @return the calculated text size in px
+     */
+    public static float calculateTextSizeInPx(@NonNull Context context, float percentage, boolean basedOnWidth) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float baseSize = basedOnWidth ? displayMetrics.widthPixels : displayMetrics.heightPixels;
+        return baseSize * (percentage / 100);
+    }
+
+    public static String md5(@NonNull String input) {
+        try {
+            // Create an MD5 MessageDigest instance
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            // Compute the MD5 hash
+            byte[] hashBytes = md.digest(input.getBytes());
+            // Convert the hash bytes to a hexadecimal string
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xFF & b);
+                if (hex.length() == 1) {
+                    hexString.append('0'); // Add leading zero for single-digit values
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println("MD5 algorithm not available: " + e);
+            return null;
+        }
+    }
+
+    public static void disableSslVerificationGlobally() {
+        try {
+            // Create a TrustManager that does not validate certificate chains
+            X509TrustManager trustManager = unsafeTrustManager(null);
+            // Install the all-trusting TrustManager
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{trustManager}, new SecureRandom());
+            SSLContext.setDefault(sc);
+            // Set the default SSLSocketFactory for the entire app
+            SSLSocketFactory sslSocketFactory = sc.getSocketFactory();
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
+            // Disable Hostname Verification
+            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    public static HashMap<String, String> sortByValue(@NonNull HashMap<String, String> map) {
+        // Convert the HashMap to a list of entries
+        List<Map.Entry<String, String>> entryList = new ArrayList<>(map.entrySet());
+        // Sort the list by values using Collections.sort()
+        Collections.sort(entryList, new Comparator<Map.Entry<String, String>>() {
+            @Override
+            public int compare(Map.Entry<String, String> entry1, Map.Entry<String, String> entry2) {
+                return entry1.getValue().compareTo(entry2.getValue());
+            }
+        });
+        // Create a new LinkedHashMap to preserve the sorted order
+        HashMap<String, String> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : entryList) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+
+    public static HashMap<String, String> sortByKey(@NonNull HashMap<String, String> map) {
+        // Convert the HashMap to a list of entries
+        List<Map.Entry<String, String>> entryList = new ArrayList<>(map.entrySet());
+        // Sort the list by keys using Collections.sort()
+        Collections.sort(entryList, new Comparator<Map.Entry<String, String>>() {
+            @Override
+            public int compare(Map.Entry<String, String> entry1, Map.Entry<String, String> entry2) {
+                return entry1.getKey().compareTo(entry2.getKey());
+            }
+        });
+        // Create a new LinkedHashMap to preserve the sorted order
+        HashMap<String, String> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : entryList) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+
+    public static InputStream getInputStreamFromFile(@NonNull File file) throws IOException {
+        if (file.exists() && file.isFile()) {
+            return new FileInputStream(file);
+        } else {
+            throw new IllegalArgumentException("Invalid file: The file is null, does not exist, or is not a valid file.");
+        }
+    }
+
+    public static InputStream getInputStreamFromUri(@NonNull Context context, @NonNull Uri uri) throws IOException {
+        return context.getContentResolver().openInputStream(uri);
+    }
+
+    public static HashMap<String, Object> getUriData(@NonNull Context context, @NonNull Uri uri) {
+        HashMap<String, Object> map = new HashMap<>();
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        if (notNull(cursor)) {
+            int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+            int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+            cursor.moveToFirst();
+            String name = cursor.getString(nameIndex);
+            long size = cursor.getLong(nameIndex);
+            map.put("name", name);
+            map.put("size", size);
+        }
+        return map;
+    }
+
+    public static String getMessage(@Nullable Throwable throwable) {
+        if (notNull(throwable)) {
+            String message = throwable.getMessage();
+            return notNull(message) ? message : "'";
+        }
+        return "";
+    }
+
+    public static String getMessage(@Nullable String message) {
+        return notNull(message) ? message : "'";
+    }
+
+    public static void quietlySleepThread(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static long getTotalBytes(@NonNull InputStream inputStream) throws IOException {
+        long totalBytes = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // If the InputStream is from memory (like a byte array), you can store the data and create a new InputStream:
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            inputStream.transferTo(baos); // Copy data
+            byte[] data = baos.toByteArray(); // Store the bytes
+            totalBytes = data.length; // Get length without consuming
+            inputStream = new ByteArrayInputStream(data); // New fresh InputStream
+        } else if (inputStream.markSupported()) {
+            // Some streams, like ByteArrayInputStream and BufferedInputStream, support resetting after reading.
+            inputStream.mark(Integer.MAX_VALUE);
+            byte[] buffer = new byte[8192]; // 8KB buffer
+            int bytesRead;
+            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
+                while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
+                    totalBytes += bytesRead;
+                }
+            }
+            inputStream.reset();
+        }
+        return totalBytes;
+    }
+
+    public static long getTotalBytes(@NonNull File file) throws IOException {
+        try (InputStream inputStream = new FileInputStream(file)) {
+            return getTotalBytes(inputStream); // Read full length
+        }
+    }
+
+    public static boolean notSameLong(long a, long b) {
+        return a != b;
+    }
+
+    public static boolean notSameInt(int a, int b) {
+        return a != b;
+    }
+
+    public static boolean notSameDouble(double a, double b) {
+        return a != b;
+    }
+
+    public static boolean notSameString(@NonNull String a, @NonNull String b) {
+        return !a.equalsIgnoreCase(b);
+    }
+
+    // PRIVATE METHODS
+    /* ----------------------------------------------------------------- */
+
+    private static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    private static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    private static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+        Cursor cursor = null;
+        final String column = MediaStore.Files.FileColumns.DATA;
+        final String[] projection = {column};
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+            if (notNull(cursor) && cursor.moveToFirst()) {
+                final int columnIndex = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(columnIndex);
+            }
+        } catch (Throwable ignored) {
+        } finally {
+            if (notNull(cursor)) {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+}

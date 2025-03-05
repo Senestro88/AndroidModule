@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="AudioRecordWaveformView">
+        <attr name="waveWidth" format="dimension" />
+        <attr name="waveMaxHeight" format="dimension" />
+        <attr name="waveMinHeight" format="dimension" />
+        <attr name="waveSpace" format="dimension" />
+        <attr name="waveColor" format="color" />
+        <attr name="waveRoundedCorners" format="boolean" />
+        <attr name="waveAlignTo" format="enum">
+            <enum name="center" value="1" />
+            <enum name="bottom" value="2" />
+        </attr>
+        <attr name="waveDirection" format="enum">
+            <enum name="rightToLeft" value="1" />
+            <enum name="leftToRight" value="2" />
+        </attr>
+        <attr name="waveSoftTransition" format="boolean" />
+    </declare-styleable>
+</resources>
